@@ -72,18 +72,31 @@ export default function OrganizerDashboard() {
   const { data: applications, isLoading: applicationsLoading } = useQuery({
     queryKey: ['hackathon-applications', id],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // First fetch applications
+      const { data: appsData, error: appsError } = await supabase
         .from('applications')
         .select(`
           *,
-          team:teams(id, team_name),
-          profile:profiles!applications_user_id_fkey(full_name, email, avatar_url)
+          team:teams(id, team_name)
         `)
         .eq('hackathon_id', id)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
-      return data;
+      if (appsError) throw appsError;
+      if (!appsData || appsData.length === 0) return [];
+
+      // Then fetch profiles for the user_ids
+      const userIds = appsData.map(app => app.user_id);
+      const { data: profilesData } = await supabase
+        .from('profiles')
+        .select('user_id, full_name, email, avatar_url')
+        .in('user_id', userIds);
+
+      // Merge profiles into applications
+      return appsData.map(app => ({
+        ...app,
+        profile: profilesData?.find(p => p.user_id === app.user_id) || null
+      }));
     },
     enabled: !!id,
   });
