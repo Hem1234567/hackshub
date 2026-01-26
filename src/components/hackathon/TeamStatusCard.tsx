@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
-import { Users, CheckCircle2, Crown, Loader2, Mail, LogOut, AlertTriangle } from 'lucide-react';
+import { Users, CheckCircle2, Crown, Loader2, Mail, LogOut, AlertTriangle, FileText, Upload } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -18,6 +18,8 @@ import {
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
+import { PresentationUpload } from './PresentationUpload';
+import { PresentationViewModal } from './PresentationViewModal';
 
 interface TeamStatusCardProps {
   team: {
@@ -45,6 +47,8 @@ export function TeamStatusCard({
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [showLeaveDialog, setShowLeaveDialog] = useState(false);
+  const [showPresentationModal, setShowPresentationModal] = useState(false);
+  const [isEditingPresentation, setIsEditingPresentation] = useState(false);
 
   // Fetch team members
   const { data: teamMembers, isLoading: isLoadingMembers } = useQuery({
@@ -61,7 +65,21 @@ export function TeamStatusCard({
     },
   });
 
-  // Fetch team leader profile for pending members
+  // Fetch team's application with presentation URL
+  const { data: teamApplication, refetch: refetchApplication } = useQuery({
+    queryKey: ['team-application-presentation', team.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('applications')
+        .select('id, presentation_url')
+        .eq('team_id', team.id)
+        .maybeSingle();
+
+      if (error) throw error;
+      return data;
+    },
+  });
+
   const { data: leaderProfile } = useQuery({
     queryKey: ['team-leader-profile', team.created_by],
     queryFn: async () => {
@@ -120,6 +138,35 @@ export function TeamStatusCard({
     onError: (error: any) => {
       toast({
         title: 'Failed to leave team',
+        description: error.message || 'Something went wrong',
+        variant: 'destructive',
+      });
+    },
+  });
+
+  // Update presentation mutation
+  const updatePresentationMutation = useMutation({
+    mutationFn: async (newPresentationUrl: string) => {
+      if (!teamApplication) throw new Error('No application found');
+
+      const { error } = await supabase
+        .from('applications')
+        .update({ presentation_url: newPresentationUrl || null })
+        .eq('id', teamApplication.id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast({
+        title: 'Presentation updated',
+        description: 'Your team presentation has been updated successfully',
+      });
+      refetchApplication();
+      setIsEditingPresentation(false);
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Failed to update presentation',
         description: error.message || 'Something went wrong',
         variant: 'destructive',
       });
@@ -261,6 +308,59 @@ export function TeamStatusCard({
             </div>
           )}
 
+          {/* Presentation Management for Team Leaders */}
+          {isLeader && isApproved && (
+            <div className="mt-4 pt-4 border-t border-border">
+              <h4 className="text-sm font-medium text-muted-foreground mb-3">Team Presentation</h4>
+              {isEditingPresentation ? (
+                <div className="space-y-3">
+                  <PresentationUpload
+                    onUploadComplete={(url) => updatePresentationMutation.mutate(url)}
+                    existingUrl={teamApplication?.presentation_url || undefined}
+                  />
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setIsEditingPresentation(false)}
+                    className="w-full"
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              ) : teamApplication?.presentation_url ? (
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowPresentationModal(true)}
+                    className="flex-1"
+                  >
+                    <FileText className="w-4 h-4 mr-2" />
+                    View Presentation
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setIsEditingPresentation(true)}
+                  >
+                    <Upload className="w-4 h-4 mr-2" />
+                    Replace
+                  </Button>
+                </div>
+              ) : (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setIsEditingPresentation(true)}
+                  className="w-full"
+                >
+                  <Upload className="w-4 h-4 mr-2" />
+                  Upload Presentation
+                </Button>
+              )}
+            </div>
+          )}
+
           {/* Leave Team Button (not for leaders) */}
           {!isLeader && (
             <div className="mt-4 pt-4 border-t border-border">
@@ -308,6 +408,14 @@ export function TeamStatusCard({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Presentation View Modal */}
+      <PresentationViewModal
+        open={showPresentationModal}
+        onOpenChange={setShowPresentationModal}
+        presentationUrl={teamApplication?.presentation_url || ''}
+        teamName={team.team_name}
+      />
     </>
   );
 }

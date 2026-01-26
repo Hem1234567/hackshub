@@ -147,6 +147,25 @@ export function ApplicationForm({ hackathonId, hackathon }: ApplicationFormProps
         });
 
       if (appError) throw appError;
+
+      // Notify organizers about the new application
+      try {
+        const { data: sessionData } = await supabase.auth.getSession();
+        await supabase.functions.invoke('notify-organizer-application', {
+          body: {
+            applicationId: team.id,
+            hackathonId,
+            teamName: data.teamName,
+            hasPresentationUrl: !!presentationUrl,
+          },
+          headers: {
+            Authorization: `Bearer ${sessionData.session?.access_token}`,
+          },
+        });
+      } catch (notifyError) {
+        console.error('Failed to notify organizers:', notifyError);
+      }
+
       return team;
     },
     onSuccess: () => {
