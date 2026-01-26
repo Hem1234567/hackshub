@@ -286,6 +286,9 @@ export function JoinTeamModal({
       });
       queryClient.invalidateQueries({ queryKey: ['user-team-membership'] });
       queryClient.invalidateQueries({ queryKey: ['pending-join-requests'] });
+      queryClient.invalidateQueries({ queryKey: ['team-all-members'] });
+      queryClient.invalidateQueries({ queryKey: ['team-members'] });
+      queryClient.invalidateQueries({ queryKey: ['team-dashboard'] });
       onOpenChange(false);
     },
     onError: (error: any) => {
