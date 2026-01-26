@@ -9,7 +9,7 @@ const corsHeaders = {
 
 interface ApplicationNotificationRequest {
   applicationId: string;
-  status: "accepted" | "rejected";
+  status: "accepted" | "rejected" | "waitlisted";
   hackathonTitle: string;
 }
 
@@ -78,15 +78,26 @@ const handler = async (req: Request): Promise<Response> => {
     const userEmail = profile?.email;
     const userName = profile?.full_name || "Participant";
     const isAccepted = status === "accepted";
+    const isWaitlisted = status === "waitlisted";
 
     // Create in-app notification using the same admin client
+    const notificationTitle = isAccepted 
+      ? "Application Accepted! 🎉" 
+      : isWaitlisted 
+      ? "You're on the Waitlist 📋" 
+      : "Application Update";
+    
+    const notificationMessage = isAccepted
+      ? `Your application to ${hackathonTitle} has been accepted!`
+      : isWaitlisted
+      ? `You've been added to the waitlist for ${hackathonTitle}. We'll notify you if a spot opens up.`
+      : `Your application to ${hackathonTitle} was not selected.`;
+
     await supabaseAdmin.from("notifications").insert({
       user_id: application.user_id,
       type: "application",
-      title: isAccepted ? "Application Accepted! 🎉" : "Application Update",
-      message: isAccepted
-        ? `Your application to ${hackathonTitle} has been accepted!`
-        : `Your application to ${hackathonTitle} was not selected.`,
+      title: notificationTitle,
+      message: notificationMessage,
       metadata: {
         hackathon_id: application.hackathon_id,
         application_id: applicationId,
@@ -100,12 +111,13 @@ const handler = async (req: Request): Promise<Response> => {
 
     if (resendApiKey && userEmail) {
       const siteUrl = Deno.env.get("SITE_URL") || "https://hackathon-hub.lovable.app";
-      const subject = isAccepted
-        ? `🎉 Congratulations! You've been accepted to ${hackathonTitle}`
-        : `Update on your ${hackathonTitle} application`;
+      
+      let subject: string;
+      let htmlContent: string;
 
-      const htmlContent = isAccepted
-        ? `
+      if (isAccepted) {
+        subject = `🎉 Congratulations! You've been accepted to ${hackathonTitle}`;
+        htmlContent = `
           <div style="font-family: system-ui, -apple-system, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
             <h1 style="color: #00d4ff; margin-bottom: 20px;">🎉 Congratulations, ${userName}!</h1>
             <p style="font-size: 16px; color: #333; line-height: 1.6;">
@@ -121,8 +133,29 @@ const handler = async (req: Request): Promise<Response> => {
               </a>
             </div>
           </div>
-        `
-        : `
+        `;
+      } else if (isWaitlisted) {
+        subject = `📋 You're on the waitlist for ${hackathonTitle}`;
+        htmlContent = `
+          <div style="font-family: system-ui, -apple-system, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+            <h1 style="color: #eab308; margin-bottom: 20px;">📋 You're on the Waitlist, ${userName}!</h1>
+            <p style="font-size: 16px; color: #333; line-height: 1.6;">
+              Thank you for applying to <strong>${hackathonTitle}</strong>.
+            </p>
+            <p style="font-size: 16px; color: #333; line-height: 1.6;">
+              We've added you to our waitlist. If a spot opens up, we'll notify you immediately. In the meantime, keep an eye on your email and dashboard.
+            </p>
+            <div style="margin-top: 30px;">
+              <a href="${siteUrl}/dashboard" 
+                 style="background: #eab308; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: bold;">
+                View Dashboard
+              </a>
+            </div>
+          </div>
+        `;
+      } else {
+        subject = `Update on your ${hackathonTitle} application`;
+        htmlContent = `
           <div style="font-family: system-ui, -apple-system, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
             <h1 style="color: #333; margin-bottom: 20px;">Hello, ${userName}</h1>
             <p style="font-size: 16px; color: #333; line-height: 1.6;">
@@ -130,6 +163,9 @@ const handler = async (req: Request): Promise<Response> => {
             </p>
             <p style="font-size: 16px; color: #333; line-height: 1.6;">
               After careful consideration, we regret to inform you that your application was not selected this time.
+            </p>
+            <p style="font-size: 16px; color: #333; line-height: 1.6;">
+              Don't give up! There are many other exciting hackathons to explore.
             </p>
             <div style="margin-top: 30px;">
               <a href="${siteUrl}/hackathons" 
@@ -139,6 +175,7 @@ const handler = async (req: Request): Promise<Response> => {
             </div>
           </div>
         `;
+      }
 
       try {
         const emailRes = await fetch("https://api.resend.com/emails", {
