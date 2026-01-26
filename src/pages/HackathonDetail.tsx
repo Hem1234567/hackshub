@@ -29,6 +29,7 @@ import { TeamChat } from '@/components/hackathon/TeamChat';
 import { ProjectGallerySection } from '@/components/hackathon/ProjectGallerySection';
 import { ProjectSubmissionForm } from '@/components/hackathon/ProjectSubmissionForm';
 import { DeadlineCountdown } from '@/components/hackathon/DeadlineCountdown';
+import { ParticipantsList } from '@/components/hackathon/ParticipantsList';
 
 const modeIcons = {
   online: Wifi,
@@ -272,9 +273,13 @@ export default function HackathonDetail() {
         <section className="py-8">
           <div className="container mx-auto px-4">
             <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="bg-muted/50 mb-8">
+              <TabsList className="bg-muted/50 mb-8 flex-wrap">
                 <TabsTrigger value="overview">Overview</TabsTrigger>
                 <TabsTrigger value="prizes">Prizes</TabsTrigger>
+                <TabsTrigger value="participants">
+                  <Users className="w-4 h-4 mr-2" />
+                  Participants
+                </TabsTrigger>
                 {isGalleryPublic && (
                   <TabsTrigger value="gallery">
                     <Image className="w-4 h-4 mr-2" />
@@ -394,6 +399,23 @@ export default function HackathonDetail() {
                       ) : (
                         <p className="text-muted-foreground">No prizes announced yet.</p>
                       )}
+                    </motion.div>
+                  </TabsContent>
+
+                  <TabsContent value="participants" className="mt-0">
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="glass-card p-8"
+                    >
+                      <h2 className="text-2xl font-heading font-bold mb-6 flex items-center gap-2">
+                        <Users className="w-6 h-6 text-primary" />
+                        Participants
+                      </h2>
+                      <p className="text-muted-foreground mb-6">
+                        Meet the hackers participating in this event. Click on a participant to view their public profile.
+                      </p>
+                      <ParticipantsList hackathonId={id!} />
                     </motion.div>
                   </TabsContent>
 
