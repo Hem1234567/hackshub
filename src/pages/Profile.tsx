@@ -39,6 +39,8 @@ import { Layout } from '@/components/layout/Layout';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { CountrySelect } from '@/components/profile/CountrySelect';
+import { ProfileCompleteness } from '@/components/profile/ProfileCompleteness';
 
 const profileSchema = z.object({
   first_name: z.string().min(1, 'First name is required'),
@@ -86,6 +88,7 @@ export default function Profile() {
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const [isUploadingResume, setIsUploadingResume] = useState(false);
   const [levelOfStudy, setLevelOfStudy] = useState(profile?.level_of_study || '');
+  const [country, setCountry] = useState(profile?.country || '');
 
   const {
     register,
@@ -135,6 +138,21 @@ export default function Profile() {
 
   const updateProfileMutation = useMutation({
     mutationFn: async (data: ProfileFormData) => {
+      // Check if username is taken (if provided and different from current)
+      if (data.username && data.username !== profile?.username) {
+        const { data: existingUser, error: checkError } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('username', data.username)
+          .neq('user_id', user!.id)
+          .maybeSingle();
+
+        if (checkError) throw checkError;
+        if (existingUser) {
+          throw new Error('This username is already taken. Please choose another one.');
+        }
+      }
+
       const { error } = await supabase
         .from('profiles')
         .update({
@@ -145,7 +163,7 @@ export default function Profile() {
           age: data.age || null,
           phone_number: data.phone_number || null,
           college: data.college || null,
-          country: data.country || null,
+          country: country || null,
           level_of_study: data.level_of_study || null,
           bio: data.bio || null,
           linkedin_url: data.linkedin_url || null,
@@ -163,9 +181,10 @@ export default function Profile() {
       setIsEditing(false);
     },
     onError: (error: any) => {
+      const message = error.message || 'Something went wrong';
       toast({
         title: 'Update failed',
-        description: error.message || 'Something went wrong',
+        description: message.includes('username') ? message : 'Failed to update profile. Please try again.',
         variant: 'destructive',
       });
     },
@@ -290,6 +309,7 @@ export default function Profile() {
     setIsEditing(false);
     setSkills(profile?.skills || []);
     setLevelOfStudy(profile?.level_of_study || '');
+    setCountry(profile?.country || '');
     reset({
       first_name: profile?.first_name || '',
       last_name: profile?.last_name || '',
@@ -314,6 +334,9 @@ export default function Profile() {
     <Layout>
       <div className="min-h-screen py-8">
         <div className="container mx-auto px-4 max-w-4xl">
+          {/* Profile Completeness Indicator */}
+          <ProfileCompleteness profile={profile} />
+          
           {/* Profile Header */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -464,15 +487,13 @@ export default function Profile() {
                         </div>
                         <div className="space-y-2">
                           <Label htmlFor="country">Country of Residence</Label>
-                          <div className="relative">
-                            <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                            <Input
-                              id="country"
-                              {...register('country')}
-                              className="pl-10 bg-muted/50 border-border"
-                              placeholder="United States"
-                            />
-                          </div>
+                          <CountrySelect
+                            value={country}
+                            onValueChange={(value) => {
+                              setCountry(value);
+                              setValue('country', value);
+                            }}
+                          />
                         </div>
                         <div className="space-y-2">
                           <Label htmlFor="level_of_study">Level of Study</Label>
