@@ -18,6 +18,15 @@ import {
   Trophy,
   Users,
   CheckCircle2,
+  Phone,
+  GraduationCap,
+  Globe,
+  Linkedin,
+  Github,
+  Link,
+  FileText,
+  Upload,
+  Mail,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -25,19 +34,38 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Layout } from '@/components/layout/Layout';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 
 const profileSchema = z.object({
-  full_name: z.string().min(2, 'Name must be at least 2 characters'),
+  first_name: z.string().min(1, 'First name is required'),
+  last_name: z.string().min(1, 'Last name is required'),
   username: z.string().min(3, 'Username must be at least 3 characters').optional().or(z.literal('')),
+  age: z.coerce.number().min(13, 'Must be at least 13').max(120, 'Invalid age').optional().or(z.literal('')),
+  phone_number: z.string().optional(),
+  college: z.string().optional(),
+  country: z.string().optional(),
+  level_of_study: z.string().optional(),
   bio: z.string().max(500, 'Bio must be less than 500 characters').optional(),
-  location: z.string().optional(),
+  linkedin_url: z.string().url('Invalid URL').optional().or(z.literal('')),
+  github_url: z.string().url('Invalid URL').optional().or(z.literal('')),
+  portfolio_url: z.string().url('Invalid URL').optional().or(z.literal('')),
 });
 
 type ProfileFormData = z.infer<typeof profileSchema>;
+
+const LEVEL_OF_STUDY_OPTIONS = [
+  'High School',
+  'Undergraduate',
+  'Graduate',
+  'PhD',
+  'Bootcamp',
+  'Self-taught',
+  'Working Professional',
+];
 
 const SUGGESTED_SKILLS = [
   'React', 'TypeScript', 'JavaScript', 'Python', 'Node.js', 'Go', 'Rust',
@@ -50,24 +78,36 @@ export default function Profile() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const resumeInputRef = useRef<HTMLInputElement>(null);
   
   const [isEditing, setIsEditing] = useState(false);
   const [skills, setSkills] = useState<string[]>(profile?.skills || []);
   const [newSkill, setNewSkill] = useState('');
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  const [isUploadingResume, setIsUploadingResume] = useState(false);
+  const [levelOfStudy, setLevelOfStudy] = useState(profile?.level_of_study || '');
 
   const {
     register,
     handleSubmit,
     reset,
     formState: { errors },
+    setValue,
   } = useForm<ProfileFormData>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
-      full_name: profile?.full_name || '',
+      first_name: profile?.first_name || '',
+      last_name: profile?.last_name || '',
       username: profile?.username || '',
+      age: profile?.age || '',
+      phone_number: profile?.phone_number || '',
+      college: profile?.college || '',
+      country: profile?.country || '',
+      level_of_study: profile?.level_of_study || '',
       bio: profile?.bio || '',
-      location: profile?.location || '',
+      linkedin_url: profile?.linkedin_url || '',
+      github_url: profile?.github_url || '',
+      portfolio_url: profile?.portfolio_url || '',
     },
   });
 
@@ -98,10 +138,19 @@ export default function Profile() {
       const { error } = await supabase
         .from('profiles')
         .update({
-          full_name: data.full_name,
+          first_name: data.first_name,
+          last_name: data.last_name,
+          full_name: `${data.first_name} ${data.last_name}`.trim(),
           username: data.username || null,
+          age: data.age || null,
+          phone_number: data.phone_number || null,
+          college: data.college || null,
+          country: data.country || null,
+          level_of_study: data.level_of_study || null,
           bio: data.bio || null,
-          location: data.location || null,
+          linkedin_url: data.linkedin_url || null,
+          github_url: data.github_url || null,
+          portfolio_url: data.portfolio_url || null,
           skills,
         })
         .eq('user_id', user!.id);
@@ -168,6 +217,54 @@ export default function Profile() {
     }
   };
 
+  const handleResumeUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.type !== 'application/pdf') {
+      toast({ title: 'Invalid file', description: 'Please upload a PDF file', variant: 'destructive' });
+      return;
+    }
+
+    if (file.size > 10 * 1024 * 1024) {
+      toast({ title: 'File too large', description: 'Please upload a PDF under 10MB', variant: 'destructive' });
+      return;
+    }
+
+    setIsUploadingResume(true);
+
+    try {
+      const fileName = `${user!.id}/resume.pdf`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('resumes')
+        .upload(fileName, file, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      // Get signed URL for private bucket
+      const { data: signedUrlData, error: signedUrlError } = await supabase.storage
+        .from('resumes')
+        .createSignedUrl(fileName, 60 * 60 * 24 * 365); // 1 year
+
+      if (signedUrlError) throw signedUrlError;
+
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ resume_url: signedUrlData.signedUrl })
+        .eq('user_id', user!.id);
+
+      if (updateError) throw updateError;
+
+      toast({ title: 'Resume uploaded!', description: 'Your resume has been saved.' });
+      refreshProfile();
+    } catch (error: any) {
+      toast({ title: 'Upload failed', description: error.message, variant: 'destructive' });
+    } finally {
+      setIsUploadingResume(false);
+    }
+  };
+
   const addSkill = () => {
     if (newSkill.trim() && !skills.includes(newSkill.trim())) {
       setSkills([...skills, newSkill.trim()]);
@@ -192,13 +289,26 @@ export default function Profile() {
   const cancelEdit = () => {
     setIsEditing(false);
     setSkills(profile?.skills || []);
+    setLevelOfStudy(profile?.level_of_study || '');
     reset({
-      full_name: profile?.full_name || '',
+      first_name: profile?.first_name || '',
+      last_name: profile?.last_name || '',
       username: profile?.username || '',
+      age: profile?.age || '',
+      phone_number: profile?.phone_number || '',
+      college: profile?.college || '',
+      country: profile?.country || '',
+      level_of_study: profile?.level_of_study || '',
       bio: profile?.bio || '',
-      location: profile?.location || '',
+      linkedin_url: profile?.linkedin_url || '',
+      github_url: profile?.github_url || '',
+      portfolio_url: profile?.portfolio_url || '',
     });
   };
+
+  const displayName = profile?.first_name && profile?.last_name 
+    ? `${profile.first_name} ${profile.last_name}` 
+    : profile?.full_name || 'Anonymous Hacker';
 
   return (
     <Layout>
@@ -216,7 +326,7 @@ export default function Profile() {
                 <Avatar className="w-32 h-32 border-4 border-primary/30">
                   <AvatarImage src={profile?.avatar_url || undefined} />
                   <AvatarFallback className="bg-gradient-primary text-primary-foreground text-3xl">
-                    {profile?.full_name?.[0] || user?.email?.[0]?.toUpperCase() || 'U'}
+                    {profile?.first_name?.[0] || profile?.full_name?.[0] || user?.email?.[0]?.toUpperCase() || 'U'}
                   </AvatarFallback>
                 </Avatar>
                 <button
@@ -240,12 +350,10 @@ export default function Profile() {
               </div>
 
               {/* Profile Info */}
-              <div className="flex-1">
+              <div className="flex-1 w-full">
                 <div className="flex items-start justify-between mb-4">
                   <div>
-                    <h1 className="text-3xl font-heading font-bold">
-                      {profile?.full_name || 'Anonymous Hacker'}
-                    </h1>
+                    <h1 className="text-3xl font-heading font-bold">{displayName}</h1>
                     {profile?.username && (
                       <p className="text-muted-foreground">@{profile.username}</p>
                     )}
@@ -278,29 +386,119 @@ export default function Profile() {
                 </div>
 
                 {isEditing ? (
-                  <form className="space-y-4">
-                    <div className="grid md:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="full_name">Full Name</Label>
-                        <Input
-                          id="full_name"
-                          {...register('full_name')}
-                          className="bg-muted/50 border-border"
-                        />
-                        {errors.full_name && (
-                          <p className="text-sm text-destructive">{errors.full_name.message}</p>
-                        )}
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="username">Username</Label>
-                        <Input
-                          id="username"
-                          {...register('username')}
-                          className="bg-muted/50 border-border"
-                          placeholder="@username"
-                        />
+                  <form className="space-y-6">
+                    {/* Personal Information */}
+                    <div>
+                      <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                        <User className="w-5 h-5 text-primary" />
+                        Personal Information
+                      </h3>
+                      <div className="grid md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="first_name">First Name *</Label>
+                          <Input
+                            id="first_name"
+                            {...register('first_name')}
+                            className="bg-muted/50 border-border"
+                          />
+                          {errors.first_name && (
+                            <p className="text-sm text-destructive">{errors.first_name.message}</p>
+                          )}
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="last_name">Last Name *</Label>
+                          <Input
+                            id="last_name"
+                            {...register('last_name')}
+                            className="bg-muted/50 border-border"
+                          />
+                          {errors.last_name && (
+                            <p className="text-sm text-destructive">{errors.last_name.message}</p>
+                          )}
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="username">Username</Label>
+                          <Input
+                            id="username"
+                            {...register('username')}
+                            className="bg-muted/50 border-border"
+                            placeholder="@username"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="age">Age</Label>
+                          <Input
+                            id="age"
+                            type="number"
+                            {...register('age')}
+                            className="bg-muted/50 border-border"
+                            placeholder="18"
+                          />
+                          {errors.age && (
+                            <p className="text-sm text-destructive">{errors.age.message}</p>
+                          )}
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="phone_number">Phone Number</Label>
+                          <div className="relative">
+                            <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                            <Input
+                              id="phone_number"
+                              {...register('phone_number')}
+                              className="pl-10 bg-muted/50 border-border"
+                              placeholder="+1 (555) 000-0000"
+                            />
+                          </div>
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="college">College/University</Label>
+                          <div className="relative">
+                            <GraduationCap className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                            <Input
+                              id="college"
+                              {...register('college')}
+                              className="pl-10 bg-muted/50 border-border"
+                              placeholder="MIT"
+                            />
+                          </div>
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="country">Country of Residence</Label>
+                          <div className="relative">
+                            <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                            <Input
+                              id="country"
+                              {...register('country')}
+                              className="pl-10 bg-muted/50 border-border"
+                              placeholder="United States"
+                            />
+                          </div>
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="level_of_study">Level of Study</Label>
+                          <Select
+                            value={levelOfStudy}
+                            onValueChange={(value) => {
+                              setLevelOfStudy(value);
+                              setValue('level_of_study', value);
+                            }}
+                          >
+                            <SelectTrigger className="bg-muted/50 border-border">
+                              <SelectValue placeholder="Select level" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {LEVEL_OF_STUDY_OPTIONS.map((level) => (
+                                <SelectItem key={level} value={level}>
+                                  {level}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
                       </div>
                     </div>
+
+                    {/* Bio */}
                     <div className="space-y-2">
                       <Label htmlFor="bio">Bio</Label>
                       <Textarea
@@ -311,17 +509,104 @@ export default function Profile() {
                         placeholder="Tell us about yourself..."
                       />
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="location">Location</Label>
-                      <div className="relative">
-                        <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                        <Input
-                          id="location"
-                          {...register('location')}
-                          className="pl-10 bg-muted/50 border-border"
-                          placeholder="San Francisco, CA"
+
+                    {/* Social Links */}
+                    <div>
+                      <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                        <Link className="w-5 h-5 text-primary" />
+                        Social Links
+                      </h3>
+                      <div className="grid md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="linkedin_url">LinkedIn</Label>
+                          <div className="relative">
+                            <Linkedin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                            <Input
+                              id="linkedin_url"
+                              {...register('linkedin_url')}
+                              className="pl-10 bg-muted/50 border-border"
+                              placeholder="https://linkedin.com/in/username"
+                            />
+                          </div>
+                          {errors.linkedin_url && (
+                            <p className="text-sm text-destructive">{errors.linkedin_url.message}</p>
+                          )}
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="github_url">GitHub</Label>
+                          <div className="relative">
+                            <Github className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                            <Input
+                              id="github_url"
+                              {...register('github_url')}
+                              className="pl-10 bg-muted/50 border-border"
+                              placeholder="https://github.com/username"
+                            />
+                          </div>
+                          {errors.github_url && (
+                            <p className="text-sm text-destructive">{errors.github_url.message}</p>
+                          )}
+                        </div>
+                        <div className="space-y-2 md:col-span-2">
+                          <Label htmlFor="portfolio_url">Portfolio</Label>
+                          <div className="relative">
+                            <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                            <Input
+                              id="portfolio_url"
+                              {...register('portfolio_url')}
+                              className="pl-10 bg-muted/50 border-border"
+                              placeholder="https://your-portfolio.com"
+                            />
+                          </div>
+                          {errors.portfolio_url && (
+                            <p className="text-sm text-destructive">{errors.portfolio_url.message}</p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Resume Upload */}
+                    <div>
+                      <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                        <FileText className="w-5 h-5 text-primary" />
+                        Resume
+                      </h3>
+                      <div className="flex items-center gap-4">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => resumeInputRef.current?.click()}
+                          disabled={isUploadingResume}
+                        >
+                          {isUploadingResume ? (
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          ) : (
+                            <Upload className="w-4 h-4 mr-2" />
+                          )}
+                          Upload Resume (PDF)
+                        </Button>
+                        {profile?.resume_url && (
+                          <a
+                            href={profile.resume_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-primary hover:underline flex items-center gap-1"
+                          >
+                            <FileText className="w-4 h-4" />
+                            View Current Resume
+                          </a>
+                        )}
+                        <input
+                          ref={resumeInputRef}
+                          type="file"
+                          accept=".pdf"
+                          onChange={handleResumeUpload}
+                          className="hidden"
                         />
                       </div>
+                      <p className="text-sm text-muted-foreground mt-2">
+                        Max file size: 10MB. Accepted format: PDF
+                      </p>
                     </div>
                   </form>
                 ) : (
@@ -329,12 +614,86 @@ export default function Profile() {
                     {profile?.bio && (
                       <p className="text-muted-foreground mb-4">{profile.bio}</p>
                     )}
-                    <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
-                      {profile?.location && (
+                    <div className="flex flex-wrap gap-4 text-sm text-muted-foreground mb-4">
+                      {user?.email && (
                         <span className="flex items-center gap-1">
-                          <MapPin className="w-4 h-4" />
-                          {profile.location}
+                          <Mail className="w-4 h-4" />
+                          {user.email}
                         </span>
+                      )}
+                      {profile?.phone_number && (
+                        <span className="flex items-center gap-1">
+                          <Phone className="w-4 h-4" />
+                          {profile.phone_number}
+                        </span>
+                      )}
+                      {profile?.country && (
+                        <span className="flex items-center gap-1">
+                          <Globe className="w-4 h-4" />
+                          {profile.country}
+                        </span>
+                      )}
+                      {profile?.college && (
+                        <span className="flex items-center gap-1">
+                          <GraduationCap className="w-4 h-4" />
+                          {profile.college}
+                        </span>
+                      )}
+                      {profile?.level_of_study && (
+                        <Badge variant="outline">{profile.level_of_study}</Badge>
+                      )}
+                      {profile?.age && (
+                        <span className="flex items-center gap-1">
+                          {profile.age} years old
+                        </span>
+                      )}
+                    </div>
+                    
+                    {/* Social Links Display */}
+                    <div className="flex flex-wrap gap-3">
+                      {profile?.linkedin_url && (
+                        <a
+                          href={profile.linkedin_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-1 text-primary hover:underline"
+                        >
+                          <Linkedin className="w-4 h-4" />
+                          LinkedIn
+                        </a>
+                      )}
+                      {profile?.github_url && (
+                        <a
+                          href={profile.github_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-1 text-primary hover:underline"
+                        >
+                          <Github className="w-4 h-4" />
+                          GitHub
+                        </a>
+                      )}
+                      {profile?.portfolio_url && (
+                        <a
+                          href={profile.portfolio_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-1 text-primary hover:underline"
+                        >
+                          <Globe className="w-4 h-4" />
+                          Portfolio
+                        </a>
+                      )}
+                      {profile?.resume_url && (
+                        <a
+                          href={profile.resume_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-1 text-primary hover:underline"
+                        >
+                          <FileText className="w-4 h-4" />
+                          Resume
+                        </a>
                       )}
                     </div>
                   </>
