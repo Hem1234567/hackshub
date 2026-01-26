@@ -198,8 +198,8 @@ export default function OrganizerDashboard() {
 
       if (error) throw error;
 
-      // Send notification email for accept/reject
-      if ((status === 'accepted' || status === 'rejected') && hackathon) {
+      // Send notification email for accept/reject/waitlist
+      if ((status === 'accepted' || status === 'rejected' || status === 'waitlisted') && hackathon) {
         try {
           const { data: sessionData } = await supabase.auth.getSession();
           await supabase.functions.invoke('send-application-notification', {

@@ -28,6 +28,7 @@ import { TeamSection } from '@/components/hackathon/TeamSection';
 import { TeamChat } from '@/components/hackathon/TeamChat';
 import { ProjectGallerySection } from '@/components/hackathon/ProjectGallerySection';
 import { ProjectSubmissionForm } from '@/components/hackathon/ProjectSubmissionForm';
+import { DeadlineCountdown } from '@/components/hackathon/DeadlineCountdown';
 
 const modeIcons = {
   online: Wifi,
@@ -490,11 +491,25 @@ export default function HackathonDetail() {
                     </div>
                   </motion.div>
 
+                  {/* Deadline Countdown */}
+                  {hackathon.application_deadline && !isDeadlinePassed && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.2 }}
+                    >
+                      <DeadlineCountdown 
+                        deadline={hackathon.application_deadline} 
+                        label="Applications close in"
+                      />
+                    </motion.div>
+                  )}
+
                   {/* Important Dates */}
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.2 }}
+                    transition={{ delay: 0.3 }}
                     className="glass-card p-6"
                   >
                     <h3 className="font-heading font-semibold mb-4">Important Dates</h3>
