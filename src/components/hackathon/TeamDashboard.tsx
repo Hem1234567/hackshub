@@ -59,14 +59,19 @@ export function TeamDashboard({ teamId, hackathonId }: TeamDashboardProps) {
         .from('team_members')
         .select(`
           *,
-          profile:profiles(full_name, avatar_url)
+          profile:profiles!left(full_name, avatar_url)
         `)
         .eq('team_id', teamId)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching team members:', error);
+        throw error;
+      }
+      console.log('Team members fetched:', data);
       return data;
     },
+    refetchInterval: 5000, // Refetch every 5 seconds for real-time updates
   });
 
   // Simulate activity log from team members data
