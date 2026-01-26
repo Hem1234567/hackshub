@@ -8,12 +8,23 @@ interface Profile {
   user_id: string;
   username: string | null;
   full_name: string | null;
+  first_name: string | null;
+  last_name: string | null;
   email: string | null;
   avatar_url: string | null;
   bio: string | null;
   skills: string[];
   location: string | null;
   is_public: boolean;
+  age: number | null;
+  phone_number: string | null;
+  college: string | null;
+  country: string | null;
+  level_of_study: string | null;
+  linkedin_url: string | null;
+  github_url: string | null;
+  portfolio_url: string | null;
+  resume_url: string | null;
 }
 
 interface AuthContextType {

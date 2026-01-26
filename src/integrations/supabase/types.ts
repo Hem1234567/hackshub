@@ -315,43 +315,76 @@ export type Database = {
       }
       profiles: {
         Row: {
+          age: number | null
           avatar_url: string | null
           bio: string | null
+          college: string | null
+          country: string | null
           created_at: string | null
           email: string | null
+          first_name: string | null
           full_name: string | null
+          github_url: string | null
           id: string
           is_public: boolean | null
+          last_name: string | null
+          level_of_study: string | null
+          linkedin_url: string | null
           location: string | null
+          phone_number: string | null
+          portfolio_url: string | null
           readme_md: string | null
+          resume_url: string | null
           skills: string[] | null
           user_id: string
           username: string | null
         }
         Insert: {
+          age?: number | null
           avatar_url?: string | null
           bio?: string | null
+          college?: string | null
+          country?: string | null
           created_at?: string | null
           email?: string | null
+          first_name?: string | null
           full_name?: string | null
+          github_url?: string | null
           id?: string
           is_public?: boolean | null
+          last_name?: string | null
+          level_of_study?: string | null
+          linkedin_url?: string | null
           location?: string | null
+          phone_number?: string | null
+          portfolio_url?: string | null
           readme_md?: string | null
+          resume_url?: string | null
           skills?: string[] | null
           user_id: string
           username?: string | null
         }
         Update: {
+          age?: number | null
           avatar_url?: string | null
           bio?: string | null
+          college?: string | null
+          country?: string | null
           created_at?: string | null
           email?: string | null
+          first_name?: string | null
           full_name?: string | null
+          github_url?: string | null
           id?: string
           is_public?: boolean | null
+          last_name?: string | null
+          level_of_study?: string | null
+          linkedin_url?: string | null
           location?: string | null
+          phone_number?: string | null
+          portfolio_url?: string | null
           readme_md?: string | null
+          resume_url?: string | null
           skills?: string[] | null
           user_id?: string
           username?: string | null
