@@ -1,5 +1,6 @@
 import { Bell, Check, Loader2 } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -13,6 +14,7 @@ import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { formatDistanceToNow } from 'date-fns';
+import { useToast } from '@/hooks/use-toast';
 
 interface Notification {
   id: string;
@@ -27,6 +29,7 @@ interface Notification {
 export function NotificationBell() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const { toast } = useToast();
 
   const { data: notifications = [], isLoading } = useQuery({
     queryKey: ['notifications', user?.id],
@@ -43,8 +46,40 @@ export function NotificationBell() {
       return data as Notification[];
     },
     enabled: !!user,
-    refetchInterval: 30000, // Refetch every 30 seconds
   });
+
+  // Real-time subscription for new notifications
+  useEffect(() => {
+    if (!user) return;
+
+    const channel = supabase
+      .channel('notifications-realtime')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'notifications',
+          filter: `user_id=eq.${user.id}`,
+        },
+        (payload) => {
+          // Invalidate query to refetch notifications
+          queryClient.invalidateQueries({ queryKey: ['notifications', user.id] });
+          
+          // Show toast for new notification
+          const newNotification = payload.new as Notification;
+          toast({
+            title: newNotification.title || 'New Notification',
+            description: newNotification.message,
+          });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user, queryClient, toast]);
 
   const unreadCount = notifications.filter((n) => !n.read).length;
 
