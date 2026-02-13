@@ -215,7 +215,7 @@ export default function Dashboard() {
     });
 
     // Sort by created_at descending
-    return participations.sort((a, b) => 
+    return participations.sort((a, b) =>
       new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
     );
   }, [applications, teamMemberships]);
@@ -282,19 +282,19 @@ export default function Dashboard() {
 
   return (
     <Layout>
-      <div className="min-h-screen py-8">
+      <div className="min-h-screen py-12 bg-background">
         <div className="container mx-auto px-4">
           {/* Header */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mb-8"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="mb-12 border-b-4 border-black dark:border-white pb-8"
           >
-            <h1 className="text-3xl font-heading font-bold mb-2">
-              Welcome back, <span className="gradient-text">{profile?.full_name || 'Hacker'}</span>
+            <h1 className="text-4xl md:text-5xl font-black uppercase mb-4 tracking-tighter">
+              Welcome back, <span className="bg-primary px-2 text-black">{profile?.full_name || 'Hacker'}</span>
             </h1>
-            <p className="text-muted-foreground">
-              Manage your hackathon applications, teams, and projects
+            <p className="text-xl font-mono text-muted-foreground uppercase">
+              // TERMINAL_ACCESS_GRANTED: Manage your hackathon operations
             </p>
           </motion.div>
 
@@ -303,49 +303,49 @@ export default function Dashboard() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8"
+            className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-12"
           >
-            <div className="glass-card p-6">
+            <div className="bg-card border-4 border-black dark:border-white p-6 shadow-neo hover:shadow-neo-lg transition-all hover:-translate-y-1">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center">
-                  <FolderOpen className="w-6 h-6 text-primary" />
+                <div className="w-12 h-12 bg-primary border-4 border-black flex items-center justify-center shadow-neo-sm">
+                  <FolderOpen className="w-6 h-6 text-black" />
                 </div>
                 <div>
-                  <p className="text-2xl font-heading font-bold">{combinedParticipations.length}</p>
-                  <p className="text-sm text-muted-foreground">Hackathons</p>
+                  <p className="text-3xl font-black">{combinedParticipations.length}</p>
+                  <p className="text-xs font-bold font-mono uppercase text-muted-foreground">Hackathons</p>
                 </div>
               </div>
             </div>
-            <div className="glass-card p-6">
+            <div className="bg-card border-4 border-black dark:border-white p-6 shadow-neo hover:shadow-neo-lg transition-all hover:-translate-y-1">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-xl bg-secondary/20 flex items-center justify-center">
-                  <Users className="w-6 h-6 text-secondary" />
+                <div className="w-12 h-12 bg-secondary border-4 border-black flex items-center justify-center shadow-neo-sm">
+                  <Users className="w-6 h-6 text-black" />
                 </div>
                 <div>
-                  <p className="text-2xl font-heading font-bold">{totalTeams}</p>
-                  <p className="text-sm text-muted-foreground">Teams</p>
+                  <p className="text-3xl font-black">{totalTeams}</p>
+                  <p className="text-xs font-bold font-mono uppercase text-muted-foreground">Teams</p>
                 </div>
               </div>
             </div>
-            <div className="glass-card p-6">
+            <div className="bg-card border-4 border-black dark:border-white p-6 shadow-neo hover:shadow-neo-lg transition-all hover:-translate-y-1">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-xl bg-emerald-500/20 flex items-center justify-center">
-                  <Trophy className="w-6 h-6 text-emerald-400" />
+                <div className="w-12 h-12 bg-emerald-400 border-4 border-black flex items-center justify-center shadow-neo-sm">
+                  <Trophy className="w-6 h-6 text-black" />
                 </div>
                 <div>
-                  <p className="text-2xl font-heading font-bold">{organizerHackathons?.length || 0}</p>
-                  <p className="text-sm text-muted-foreground">Organized</p>
+                  <p className="text-3xl font-black">{organizerHackathons?.length || 0}</p>
+                  <p className="text-xs font-bold font-mono uppercase text-muted-foreground">Organized</p>
                 </div>
               </div>
             </div>
-            <div className="glass-card p-6">
+            <div className="bg-card border-4 border-black dark:border-white p-6 shadow-neo hover:shadow-neo-lg transition-all hover:-translate-y-1">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-xl bg-amber-500/20 flex items-center justify-center">
-                  <Bell className="w-6 h-6 text-amber-400" />
+                <div className="w-12 h-12 bg-amber-400 border-4 border-black flex items-center justify-center shadow-neo-sm">
+                  <Bell className="w-6 h-6 text-black" />
                 </div>
                 <div>
-                  <p className="text-2xl font-heading font-bold">{notifications?.length || 0}</p>
-                  <p className="text-sm text-muted-foreground">Notifications</p>
+                  <p className="text-3xl font-black">{notifications?.length || 0}</p>
+                  <p className="text-xs font-bold font-mono uppercase text-muted-foreground">Alerts</p>
                 </div>
               </div>
             </div>
@@ -357,66 +357,76 @@ export default function Dashboard() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
           >
-            <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <div className="flex items-center justify-between mb-6">
-                <TabsList className="bg-muted/50">
-                  <TabsTrigger value="applications">My Hackathons</TabsTrigger>
-                  <TabsTrigger value="organized">Organized</TabsTrigger>
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+              <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 gap-4">
+                <TabsList className="bg-transparent p-0 gap-4 h-auto flex-wrap">
+                  <TabsTrigger
+                    value="applications"
+                    className="data-[state=active]:bg-black data-[state=active]:text-white data-[state=active]:shadow-neo border-4 border-transparent data-[state=active]:border-black bg-white text-black border-black/10 hover:border-black font-bold uppercase tracking-tight rounded-none px-4 md:px-6 py-2 transition-all"
+                  >
+                    My Hackathons
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="organized"
+                    className="data-[state=active]:bg-black data-[state=active]:text-white data-[state=active]:shadow-neo border-4 border-transparent data-[state=active]:border-black bg-white text-black border-black/10 hover:border-black font-bold uppercase tracking-tight rounded-none px-4 md:px-6 py-2 transition-all"
+                  >
+                    Organized
+                  </TabsTrigger>
                 </TabsList>
                 <Link to="/create-hackathon">
-                  <Button className="bg-gradient-primary hover:opacity-90 text-primary-foreground">
-                    <Plus className="w-4 h-4 mr-2" />
-                    Create Hackathon
+                  <Button className="bg-primary text-black hover:bg-primary/90 border-4 border-black shadow-neo hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] font-bold uppercase">
+                    <Plus className="w-5 h-5 mr-2" />
+                    Initialize Hackathon
                   </Button>
                 </Link>
               </div>
 
-              <TabsContent value="applications">
+              <TabsContent value="applications" className="mt-0">
                 {isLoading ? (
-                  <div className="flex items-center justify-center py-20">
-                    <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                  <div className="flex items-center justify-center py-20 border-4 border-black border-dashed bg-muted/20">
+                    <Loader2 className="w-8 h-8 animate-spin text-black" />
                   </div>
                 ) : combinedParticipations.length > 0 ? (
-                  <div className="space-y-4">
+                  <div className="space-y-6">
                     {combinedParticipations.map((participation) => {
                       const status = statusConfig[participation.status];
                       const StatusIcon = status.icon;
                       return (
                         <Link key={participation.id} to={`/hackathon/${participation.hackathon_id}`}>
-                          <div className="glass-card p-6 hover:scale-[1.01] transition-transform">
-                            <div className="flex items-center justify-between">
-                              <div className="flex-1">
-                                <div className="flex items-center gap-3 mb-2">
-                                  <h3 className="text-lg font-heading font-semibold">
+                          <div className="bg-white dark:bg-black border-4 border-black dark:border-white p-6 shadow-neo hover:shadow-neo-lg transition-all hover:translate-x-[-2px] hover:translate-y-[-2px] group">
+                            <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+                              <div className="flex-1 w-full">
+                                <div className="flex flex-wrap items-center gap-3 mb-3">
+                                  <h3 className="text-xl font-black uppercase tracking-tight group-hover:text-primary transition-colors">
                                     {participation.hackathon_title}
                                   </h3>
-                                  <Badge className={status.className}>
-                                    <StatusIcon className="w-3 h-3 mr-1" />
+                                  <Badge className={`${status.className} border-2 px-3 py-1 text-xs font-bold uppercase rounded-none shadow-sm`}>
+                                    <StatusIcon className="w-3 h-3 mr-2" />
                                     {status.label}
                                   </Badge>
                                   {participation.role === 'leader' && (
-                                    <Badge variant="outline" className="border-amber-500/50 text-amber-400">
-                                      Team Leader
+                                    <Badge variant="outline" className="border-2 border-amber-500 text-amber-600 bg-amber-50 font-bold uppercase rounded-none">
+                                      Leader
                                     </Badge>
                                   )}
                                 </div>
-                                <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                                <div className="flex flex-wrap items-center gap-6 text-sm font-mono font-medium text-muted-foreground">
                                   {participation.team_name && (
-                                    <span className="flex items-center gap-1">
+                                    <span className="flex items-center gap-2 bg-muted/50 px-2 py-1 border border-black/10">
                                       <Users className="w-4 h-4" />
                                       {participation.team_name}
                                     </span>
                                   )}
                                   {participation.hackathon_start_date && (
-                                    <span className="flex items-center gap-1">
+                                    <span className="flex items-center gap-2">
                                       <Calendar className="w-4 h-4" />
                                       {format(new Date(participation.hackathon_start_date), 'MMM d, yyyy')}
                                     </span>
                                   )}
                                 </div>
                               </div>
-                              <Button variant="ghost" size="sm">
-                                View Details
+                              <Button variant="ghost" size="sm" className="w-full md:w-auto border-2 border-black hover:bg-black hover:text-white uppercase font-bold">
+                                View Access
                               </Button>
                             </div>
                           </div>
@@ -425,61 +435,60 @@ export default function Dashboard() {
                     })}
                   </div>
                 ) : (
-                  <div className="glass-card p-12 text-center">
+                  <div className="border-4 border-black border-dashed p-12 text-center bg-muted/10">
                     <FolderOpen className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
-                    <h3 className="text-xl font-heading font-semibold mb-2">No hackathons yet</h3>
-                    <p className="text-muted-foreground mb-6">
-                      Start by exploring and applying to hackathons, or join a team
+                    <h3 className="text-2xl font-black uppercase mb-2">No active missions</h3>
+                    <p className="text-muted-foreground font-mono mb-8">
+                      DEPLOY TO A HACKATHON OR JOIN A SQUAD
                     </p>
                     <Link to="/hackathons">
-                      <Button className="bg-gradient-primary hover:opacity-90 text-primary-foreground">
-                        Browse Hackathons
+                      <Button className="bg-black text-white hover:bg-black/80 border-4 border-transparent hover:border-black uppercase font-bold px-8">
+                        Browse Missions
                       </Button>
                     </Link>
                   </div>
                 )}
               </TabsContent>
 
-              <TabsContent value="organized">
+              <TabsContent value="organized" className="mt-0">
                 {organizerLoading ? (
-                  <div className="flex items-center justify-center py-20">
-                    <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                  <div className="flex items-center justify-center py-20 border-4 border-black border-dashed">
+                    <Loader2 className="w-8 h-8 animate-spin text-black" />
                   </div>
                 ) : organizerHackathons && organizerHackathons.length > 0 ? (
-                  <div className="space-y-4">
+                  <div className="space-y-6">
                     {organizerHackathons.map((hackathon) => (
                       <Link key={hackathon.id} to={`/organizer/${hackathon.id}`}>
-                        <div className="glass-card p-6 hover:scale-[1.01] transition-transform">
-                          <div className="flex items-center justify-between">
-                            <div className="flex-1">
-                              <div className="flex items-center gap-3 mb-2">
-                                <h3 className="text-lg font-heading font-semibold">
+                        <div className="bg-white dark:bg-black border-4 border-black dark:border-white p-6 shadow-neo hover:shadow-neo-lg transition-all hover:translate-x-[-2px] hover:translate-y-[-2px] group">
+                          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+                            <div className="flex-1 w-full">
+                              <div className="flex items-center gap-3 mb-3">
+                                <h3 className="text-xl font-black uppercase tracking-tight group-hover:text-primary transition-colors">
                                   {hackathon.title}
                                 </h3>
                                 <Badge
-                                  className={
-                                    hackathon.status === 'live'
-                                      ? 'status-live'
-                                      : hackathon.status === 'draft'
-                                      ? 'status-draft'
-                                      : 'status-ended'
-                                  }
+                                  className={`
+                                    ${hackathon.status === 'live' ? 'bg-green-100 text-green-700 border-green-700' : ''}
+                                    ${hackathon.status === 'draft' ? 'bg-yellow-100 text-yellow-700 border-yellow-700' : ''}
+                                    ${hackathon.status === 'ended' ? 'bg-gray-100 text-gray-700 border-gray-700' : ''}
+                                    border-2 font-bold uppercase rounded-none px-3
+                                  `}
                                 >
-                                  {hackathon.status.charAt(0).toUpperCase() + hackathon.status.slice(1)}
+                                  {hackathon.status}
                                 </Badge>
                               </div>
-                              <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                              <div className="flex items-center gap-4 text-sm font-mono text-muted-foreground">
                                 {hackathon.start_date && (
-                                  <span className="flex items-center gap-1">
+                                  <span className="flex items-center gap-2">
                                     <Calendar className="w-4 h-4" />
                                     {format(new Date(hackathon.start_date), 'MMM d, yyyy')}
                                   </span>
                                 )}
                               </div>
                             </div>
-                            <Button variant="ghost" size="sm">
+                            <Button variant="ghost" size="sm" className="w-full md:w-auto border-2 border-black hover:bg-black hover:text-white uppercase font-bold">
                               <Settings className="w-4 h-4 mr-2" />
-                              Manage
+                              Manage System
                             </Button>
                           </div>
                         </div>
@@ -487,17 +496,17 @@ export default function Dashboard() {
                     ))}
                   </div>
                 ) : (
-                  <div className="glass-card p-12 text-center">
+                  <div className="border-4 border-black border-dashed p-12 text-center bg-muted/10">
                     <Trophy className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
-                    <h3 className="text-xl font-heading font-semibold mb-2">
-                      No hackathons organized yet
+                    <h3 className="text-2xl font-black uppercase mb-2">
+                      No Events Organized
                     </h3>
-                    <p className="text-muted-foreground mb-6">
-                      Create your first hackathon and bring the community together
+                    <p className="text-muted-foreground font-mono mb-8">
+                      INITIALIZE YOUR FIRST EVENT PROTOCOL
                     </p>
                     <Link to="/create-hackathon">
-                      <Button className="bg-gradient-primary hover:opacity-90 text-primary-foreground">
-                        <Plus className="w-4 h-4 mr-2" />
+                      <Button className="bg-primary text-black hover:bg-primary/90 border-4 border-black shadow-neo uppercase font-bold px-8">
+                        <Plus className="w-5 h-5 mr-2" />
                         Create Hackathon
                       </Button>
                     </Link>

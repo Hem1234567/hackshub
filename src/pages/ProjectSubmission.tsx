@@ -252,66 +252,68 @@ export default function ProjectSubmission() {
 
   return (
     <Layout>
-      <div className="min-h-screen py-8">
+      <div className="min-h-screen py-12 bg-background">
         <div className="container mx-auto px-4 max-w-4xl">
           {/* Header */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mb-8"
+            className="mb-12 border-b-4 border-black dark:border-white pb-6"
           >
             <Button
               variant="ghost"
               onClick={() => navigate(-1)}
-              className="mb-4"
+              className="mb-6 hover:bg-transparent hover:underline p-0 font-bold uppercase"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Back
+              ABORT MISSION
             </Button>
-            <h1 className="text-3xl font-heading font-bold">
-              {existingProject ? 'Edit Project' : 'Submit Your Project'}
+            <h1 className="text-5xl font-black uppercase mb-4">
+              {existingProject ? 'Refine Artifact' : 'Submit Artifact'}
             </h1>
-            <p className="text-muted-foreground mt-2">
-              {hackathon?.title} - Share what you've built!
+            <p className="text-xl font-mono text-muted-foreground uppercase border-l-4 border-black pl-4">
+              {hackathon?.title} - INITIALIZE SUBMISSION PROTOCOL
             </p>
           </motion.div>
 
           <form onSubmit={handleSubmit((data) => onSubmit(data, false))}>
-            <div className="space-y-8">
+            <div className="space-y-12">
               {/* Basic Info */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 }}
-                className="glass-card p-8"
+                className="bg-white dark:bg-black border-4 border-black dark:border-white p-8 shadow-neo"
               >
-                <h2 className="text-xl font-heading font-semibold mb-6">Project Details</h2>
+                <h2 className="text-2xl font-black uppercase mb-8 flex items-center gap-3">
+                  <span className="w-8 h-8 bg-black text-white flex items-center justify-center text-sm rounded-none">01</span>
+                  Project Details
+                </h2>
 
-                <div className="space-y-6">
+                <div className="space-y-8">
                   <div className="space-y-2">
-                    <Label htmlFor="title">Project Title *</Label>
+                    <Label htmlFor="title" className="text-lg font-bold uppercase">Project Title *</Label>
                     <Input
                       id="title"
-                      placeholder="Enter your project name"
+                      placeholder="ENTER PROJECT DESIGNATION"
                       {...register('title')}
-                      className="bg-muted/50 border-border"
+                      className="bg-white dark:bg-black border-4 border-black dark:border-white rounded-none h-14 font-bold uppercase focus-visible:ring-0 focus-visible:shadow-neo transition-all placeholder:text-muted-foreground/50"
                     />
                     {errors.title && (
-                      <p className="text-sm text-destructive">{errors.title.message}</p>
+                      <p className="text-sm font-bold text-destructive uppercase mt-2 border-l-2 border-destructive pl-2">{errors.title.message}</p>
                     )}
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="description">Description *</Label>
+                    <Label htmlFor="description" className="text-lg font-bold uppercase">Description *</Label>
                     <Textarea
                       id="description"
-                      placeholder="Describe your project, the problem it solves, and how it works..."
+                      placeholder="DESCRIBE THE SOLUTION, ARCHITECTURE, AND EXECUTION..."
                       {...register('description')}
-                      className="bg-muted/50 border-border resize-none"
-                      rows={6}
+                      className="bg-white dark:bg-black border-4 border-black dark:border-white rounded-none font-mono focus-visible:ring-0 focus-visible:shadow-neo transition-all placeholder:text-muted-foreground/50 min-h-[200px]"
                     />
                     {errors.description && (
-                      <p className="text-sm text-destructive">{errors.description.message}</p>
+                      <p className="text-sm font-bold text-destructive uppercase mt-2 border-l-2 border-destructive pl-2">{errors.description.message}</p>
                     )}
                   </div>
                 </div>
@@ -322,56 +324,65 @@ export default function ProjectSubmission() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 }}
-                className="glass-card p-8"
+                className="bg-white dark:bg-black border-4 border-black dark:border-white p-8 shadow-neo"
               >
-                <h2 className="text-xl font-heading font-semibold mb-6">Links</h2>
+                <h2 className="text-2xl font-black uppercase mb-8 flex items-center gap-3">
+                  <span className="w-8 h-8 bg-black text-white flex items-center justify-center text-sm rounded-none">02</span>
+                  External Links
+                </h2>
 
-                <div className="space-y-4">
+                <div className="space-y-6">
                   <div className="space-y-2">
-                    <Label htmlFor="repo_url">GitHub Repository</Label>
-                    <div className="relative">
-                      <Github className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Label htmlFor="repo_url" className="text-lg font-bold uppercase">GitHub Repository</Label>
+                    <div className="relative group">
+                      <div className="absolute left-4 top-1/2 -translate-y-1/2 w-8 h-8 bg-black text-white flex items-center justify-center border-2 border-black z-10">
+                        <Github className="w-4 h-4" />
+                      </div>
                       <Input
                         id="repo_url"
-                        placeholder="https://github.com/username/repo"
+                        placeholder="HTTPS://GITHUB.COM/USERNAME/REPO"
                         {...register('repo_url')}
-                        className="pl-10 bg-muted/50 border-border"
+                        className="pl-16 bg-white dark:bg-black border-4 border-black dark:border-white rounded-none h-14 font-mono focus-visible:ring-0 focus-visible:shadow-neo transition-all"
                       />
                     </div>
                     {errors.repo_url && (
-                      <p className="text-sm text-destructive">{errors.repo_url.message}</p>
+                      <p className="text-sm font-bold text-destructive uppercase mt-2 border-l-2 border-destructive pl-2">{errors.repo_url.message}</p>
                     )}
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="demo_url">Live Demo URL</Label>
-                    <div className="relative">
-                      <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Label htmlFor="demo_url" className="text-lg font-bold uppercase">Live Demo URL</Label>
+                    <div className="relative group">
+                      <div className="absolute left-4 top-1/2 -translate-y-1/2 w-8 h-8 bg-blue-500 text-white flex items-center justify-center border-2 border-black z-10">
+                        <Globe className="w-4 h-4" />
+                      </div>
                       <Input
                         id="demo_url"
-                        placeholder="https://your-project.vercel.app"
+                        placeholder="HTTPS://YOUR-PROJECT.VERCEL.APP"
                         {...register('demo_url')}
-                        className="pl-10 bg-muted/50 border-border"
+                        className="pl-16 bg-white dark:bg-black border-4 border-black dark:border-white rounded-none h-14 font-mono focus-visible:ring-0 focus-visible:shadow-neo transition-all"
                       />
                     </div>
                     {errors.demo_url && (
-                      <p className="text-sm text-destructive">{errors.demo_url.message}</p>
+                      <p className="text-sm font-bold text-destructive uppercase mt-2 border-l-2 border-destructive pl-2">{errors.demo_url.message}</p>
                     )}
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="video_url">Demo Video URL</Label>
-                    <div className="relative">
-                      <Video className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Label htmlFor="video_url" className="text-lg font-bold uppercase">Demo Video URL</Label>
+                    <div className="relative group">
+                      <div className="absolute left-4 top-1/2 -translate-y-1/2 w-8 h-8 bg-red-500 text-white flex items-center justify-center border-2 border-black z-10">
+                        <Video className="w-4 h-4" />
+                      </div>
                       <Input
                         id="video_url"
-                        placeholder="https://youtube.com/watch?v=..."
+                        placeholder="HTTPS://YOUTUBE.COM/WATCH?V=..."
                         {...register('video_url')}
-                        className="pl-10 bg-muted/50 border-border"
+                        className="pl-16 bg-white dark:bg-black border-4 border-black dark:border-white rounded-none h-14 font-mono focus-visible:ring-0 focus-visible:shadow-neo transition-all"
                       />
                     </div>
                     {errors.video_url && (
-                      <p className="text-sm text-destructive">{errors.video_url.message}</p>
+                      <p className="text-sm font-bold text-destructive uppercase mt-2 border-l-2 border-destructive pl-2">{errors.video_url.message}</p>
                     )}
                   </div>
                 </div>
@@ -382,41 +393,48 @@ export default function ProjectSubmission() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 }}
-                className="glass-card p-8"
+                className="bg-white dark:bg-black border-4 border-black dark:border-white p-8 shadow-neo"
               >
-                <h2 className="text-xl font-heading font-semibold mb-6">Tech Stack</h2>
+                <h2 className="text-2xl font-black uppercase mb-8 flex items-center gap-3">
+                  <span className="w-8 h-8 bg-black text-white flex items-center justify-center text-sm rounded-none">03</span>
+                  Tech Stack
+                </h2>
 
-                <div className="space-y-4">
-                  <div className="flex gap-2">
+                <div className="space-y-6">
+                  <div className="flex gap-4">
                     <Input
                       value={newTech}
                       onChange={(e) => setNewTech(e.target.value)}
-                      placeholder="Add a technology..."
-                      className="bg-muted/50 border-border"
+                      placeholder="ADD A TECHNOLOGY..."
+                      className="bg-white dark:bg-black border-4 border-black dark:border-white rounded-none h-14 font-bold uppercase focus-visible:ring-0 focus-visible:shadow-neo transition-all flex-1"
                       onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addTech())}
                     />
-                    <Button type="button" onClick={addTech} variant="outline">
-                      <Plus className="w-4 h-4" />
+                    <Button
+                      type="button"
+                      onClick={addTech}
+                      className="h-14 w-14 border-4 border-black bg-primary text-black hover:bg-primary/90 hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none shadow-neo transition-all rounded-none p-0 flex items-center justify-center"
+                    >
+                      <Plus className="w-6 h-6" />
                     </Button>
                   </div>
 
                   {techStack.length > 0 && (
-                    <div className="flex flex-wrap gap-2">
+                    <div className="flex flex-wrap gap-3 p-4 border-4 border-black bg-muted/20">
                       {techStack.map((tech) => (
                         <Badge
                           key={tech}
-                          className="bg-primary/20 text-primary border border-primary/30 cursor-pointer"
+                          className="bg-white text-black border-2 border-black rounded-none px-3 py-1 text-sm font-bold uppercase cursor-pointer hover:bg-black hover:text-white transition-colors flex items-center gap-2 group shadow-neo-sm"
                           onClick={() => removeTech(tech)}
                         >
                           {tech}
-                          <X className="w-3 h-3 ml-1" />
+                          <X className="w-3 h-3 group-hover:text-red-400" />
                         </Badge>
                       ))}
                     </div>
                   )}
 
                   <div>
-                    <p className="text-sm text-muted-foreground mb-2">Suggested:</p>
+                    <p className="text-sm font-bold uppercase text-muted-foreground mb-4">Suggested Modules:</p>
                     <div className="flex flex-wrap gap-2">
                       {SUGGESTED_TECH.filter((t) => !techStack.includes(t))
                         .slice(0, 8)
@@ -424,7 +442,7 @@ export default function ProjectSubmission() {
                           <Badge
                             key={tech}
                             variant="outline"
-                            className="cursor-pointer hover:bg-primary/10"
+                            className="cursor-pointer bg-transparent border-2 border-black/20 hover:border-black hover:bg-black hover:text-white transition-all rounded-none px-3 py-1 uppercase font-bold text-xs"
                             onClick={() => setTechStack([...techStack, tech])}
                           >
                             <Plus className="w-3 h-3 mr-1" />
@@ -441,24 +459,27 @@ export default function ProjectSubmission() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.4 }}
-                className="glass-card p-8"
+                className="bg-white dark:bg-black border-4 border-black dark:border-white p-8 shadow-neo"
               >
-                <h2 className="text-xl font-heading font-semibold mb-6">Screenshots</h2>
+                <h2 className="text-2xl font-black uppercase mb-8 flex items-center gap-3">
+                  <span className="w-8 h-8 bg-black text-white flex items-center justify-center text-sm rounded-none">04</span>
+                  Visual Evidence
+                </h2>
 
-                <div className="space-y-4">
+                <div className="space-y-6">
                   {screenshots.length > 0 && (
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-6 mb-6">
                       {screenshots.map((url, index) => (
-                        <div key={index} className="relative group aspect-video">
+                        <div key={index} className="relative group aspect-video border-4 border-black shadow-neo">
                           <img
                             src={url}
                             alt={`Screenshot ${index + 1}`}
-                            className="w-full h-full object-cover rounded-lg"
+                            className="w-full h-full object-cover"
                           />
                           <button
                             type="button"
                             onClick={() => removeScreenshot(index)}
-                            className="absolute top-2 right-2 p-1 rounded-full bg-destructive text-destructive-foreground opacity-0 group-hover:opacity-100 transition-opacity"
+                            className="absolute top-2 right-2 p-2 bg-red-500 text-white border-2 border-black opacity-0 group-hover:opacity-100 transition-opacity hover:scale-110"
                           >
                             <X className="w-4 h-4" />
                           </button>
@@ -470,18 +491,21 @@ export default function ProjectSubmission() {
                   {screenshots.length < 5 && (
                     <div
                       onClick={() => fileInputRef.current?.click()}
-                      className="border-2 border-dashed border-border rounded-xl p-8 text-center cursor-pointer hover:border-primary/50 transition-colors"
+                      className="border-4 border-dashed border-black/30 hover:border-black hover:bg-muted/10 transition-all p-12 text-center cursor-pointer group"
                     >
                       {isUploading ? (
-                        <Loader2 className="w-8 h-8 mx-auto mb-2 animate-spin text-primary" />
+                        <Loader2 className="w-12 h-12 mx-auto mb-4 animate-spin text-black" />
                       ) : (
-                        <ImageIcon className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
+                        <div className="w-16 h-16 bg-white border-4 border-black shadow-neo mx-auto mb-6 flex items-center justify-center group-hover:translate-x-[2px] group-hover:translate-y-[2px] group-hover:shadow-none transition-all">
+                          <ImageIcon className="w-8 h-8 text-black" />
+                        </div>
                       )}
-                      <p className="text-muted-foreground">
-                        {isUploading ? 'Uploading...' : 'Click to upload screenshots'}
+
+                      <p className="text-xl font-black uppercase mb-2">
+                        {isUploading ? 'UPLOADING DATA...' : 'CLICK TO UPLOAD EVIDENCE'}
                       </p>
-                      <p className="text-sm text-muted-foreground">
-                        PNG, JPG up to 5MB ({screenshots.length}/5)
+                      <p className="font-mono text-muted-foreground uppercase text-sm">
+                        PNG, JPG UP TO 5MB ({screenshots.length}/5)
                       </p>
                     </div>
                   )}
@@ -502,33 +526,34 @@ export default function ProjectSubmission() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.5 }}
-                className="flex items-center justify-between"
+                className="flex flex-col md:flex-row items-center justify-between gap-6 pt-6 border-t-4 border-black dark:border-white"
               >
                 <Button
                   type="submit"
                   variant="outline"
                   disabled={saveMutation.isPending}
+                  className="w-full md:w-auto h-14 border-4 border-black font-black uppercase text-lg shadow-neo hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all bg-white text-black"
                 >
                   {saveMutation.isPending ? (
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
                   ) : (
-                    <Save className="w-4 h-4 mr-2" />
+                    <Save className="w-5 h-5 mr-2" />
                   )}
-                  Save Draft
+                  SAVE DRAFT STATE
                 </Button>
 
                 <Button
                   type="button"
                   onClick={handleSubmit((data) => onSubmit(data, true))}
                   disabled={saveMutation.isPending}
-                  className="bg-gradient-primary hover:opacity-90 text-primary-foreground"
+                  className="w-full md:w-auto h-14 bg-green-400 text-black border-4 border-black font-black uppercase text-lg shadow-neo hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none hover:bg-green-500 transition-all"
                 >
                   {saveMutation.isPending ? (
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
                   ) : (
-                    <Send className="w-4 h-4 mr-2" />
+                    <Send className="w-5 h-5 mr-2" />
                   )}
-                  Submit Project
+                  CONFIRM SUBMISSION
                 </Button>
               </motion.div>
             </div>
@@ -536,5 +561,6 @@ export default function ProjectSubmission() {
         </div>
       </div>
     </Layout>
+
   );
 }

@@ -61,78 +61,77 @@ export default function Auth() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center hero-gradient px-4">
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-secondary/10 rounded-full blur-3xl" />
-      </div>
+    <div className="min-h-screen flex items-center justify-center bg-background px-4 border-b-4 border-black dark:border-white relative overflow-hidden">
+      {/* Geometric Decor */}
+      <div className="absolute top-0 right-0 w-64 h-64 bg-primary border-b-4 border-l-4 border-black dark:border-white z-0 opacity-20" />
+      <div className="absolute bottom-0 left-0 w-64 h-64 bg-secondary border-t-4 border-r-4 border-black dark:border-white z-0 opacity-20" />
 
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
+        transition={{ duration: 0.2, ease: "circOut" }}
         className="w-full max-w-md relative z-10"
       >
         <Link
           to="/"
-          className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground mb-8 transition-colors"
+          className="inline-flex items-center gap-2 text-foreground hover:underline mb-8 transition-colors font-black uppercase tracking-tight"
         >
-          <ArrowLeft className="w-4 h-4" />
-          Back to home
+          <ArrowLeft className="w-5 h-5" />
+          ABORT SEQUENCE
         </Link>
 
-        <div className="glass-card p-8 gradient-border">
+        <div className="bg-white dark:bg-black border-4 border-black dark:border-white p-8 shadow-neo">
           <div className="text-center mb-8">
-            <div className="w-12 h-12 rounded-xl bg-gradient-primary mx-auto mb-4 flex items-center justify-center">
-              <span className="text-primary-foreground font-heading font-bold text-2xl">H</span>
+            <div className="w-16 h-16 bg-primary border-4 border-black mx-auto mb-6 flex items-center justify-center shadow-neo">
+              <span className="text-black font-black text-3xl">H</span>
             </div>
-            <h1 className="text-2xl font-heading font-bold">
-              {isSignUp ? 'Create your account' : 'Welcome back'}
+            <h1 className="text-3xl font-black uppercase tracking-tighter">
+              {isSignUp ? 'INITIATE REGISTRATION' : 'SYSTEM ACCESS'}
             </h1>
-            <p className="text-muted-foreground mt-2">
+            <p className="text-muted-foreground mt-2 font-mono text-sm uppercase border-b-2 border-black/10 dark:border-white/10 pb-4">
               {isSignUp
-                ? 'Join the global hackathon community'
-                : 'Sign in to continue to Hackathon Hub'}
+                ? 'JOIN THE GLOBAL HACKERNET'
+                : 'ENTER CREDENTIALS TO PROCEED'}
             </p>
           </div>
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             {isSignUp && (
               <div className="space-y-2">
-                <Label htmlFor="fullName">Full Name</Label>
+                <Label htmlFor="fullName" className="uppercase font-black">Full Name</Label>
                 <Input
                   id="fullName"
                   type="text"
-                  placeholder="John Doe"
+                  placeholder="JOHN DOE"
                   {...register('fullName')}
-                  className="bg-muted/50 border-border focus:border-primary"
+                  className="bg-white dark:bg-black border-4 border-black dark:border-white h-12 font-bold uppercase focus-visible:ring-0 focus-visible:shadow-neo transition-all rounded-none"
                 />
               </div>
             )}
 
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email" className="uppercase font-black">Email</Label>
               <Input
                 id="email"
                 type="email"
-                placeholder="you@example.com"
+                placeholder="YOU@EXAMPLE.COM"
                 {...register('email')}
-                className="bg-muted/50 border-border focus:border-primary"
+                className="bg-white dark:bg-black border-4 border-black dark:border-white h-12 font-bold uppercase focus-visible:ring-0 focus-visible:shadow-neo transition-all rounded-none"
               />
               {errors.email && (
-                <p className="text-sm text-destructive">{errors.email.message}</p>
+                <p className="text-sm text-destructive font-bold uppercase mt-1 border-l-2 border-destructive pl-2">{errors.email.message}</p>
               )}
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password" className="uppercase font-black">Password</Label>
               <div className="relative">
                 <Input
                   id="password"
                   type={showPassword ? 'text' : 'password'}
                   placeholder="••••••••"
                   {...register('password')}
-                  className="bg-muted/50 border-border focus:border-primary pr-10"
+                  className="bg-white dark:bg-black border-4 border-black dark:border-white h-12 font-bold pr-10 focus-visible:ring-0 focus-visible:shadow-neo transition-all rounded-none"
                 />
                 <button
                   type="button"
@@ -140,40 +139,40 @@ export default function Auth() {
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                 >
                   {showPassword ? (
-                    <EyeOff className="w-4 h-4" />
+                    <EyeOff className="w-5 h-5" />
                   ) : (
-                    <Eye className="w-4 h-4" />
+                    <Eye className="w-5 h-5" />
                   )}
                 </button>
               </div>
               {errors.password && (
-                <p className="text-sm text-destructive">{errors.password.message}</p>
+                <p className="text-sm text-destructive font-bold uppercase mt-1 border-l-2 border-destructive pl-2">{errors.password.message}</p>
               )}
             </div>
 
             <Button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-gradient-primary hover:opacity-90 text-primary-foreground"
+              className="w-full bg-primary text-black hover:bg-primary/90 border-4 border-black shadow-neo hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none font-black uppercase text-xl h-14 transition-all rounded-none"
             >
               {isLoading ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
+                <Loader2 className="w-6 h-6 animate-spin text-black" />
               ) : isSignUp ? (
-                'Create Account'
+                'INITIALIZE ACCOUNT'
               ) : (
-                'Sign In'
+                'ACCESS TERMINAL'
               )}
             </Button>
           </form>
 
-          <div className="mt-6 text-center">
-            <p className="text-muted-foreground">
-              {isSignUp ? 'Already have an account?' : "Don't have an account?"}{' '}
+          <div className="mt-8 pt-6 border-t-4 border-black dark:border-white text-center">
+            <p className="font-mono text-sm uppercase">
+              {isSignUp ? 'ALREADY HAVE ACCESS?' : "NEED CREDENTIALS?"}{' '}
               <button
                 onClick={() => setIsSignUp(!isSignUp)}
-                className="text-primary hover:underline font-medium"
+                className="text-primary hover:underline font-black uppercase ml-1"
               >
-                {isSignUp ? 'Sign in' : 'Sign up'}
+                {isSignUp ? 'SIGN IN' : 'SIGN UP'}
               </button>
             </p>
           </div>

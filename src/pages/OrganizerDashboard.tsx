@@ -41,6 +41,7 @@ import { Layout } from '@/components/layout/Layout';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { cn } from "@/lib/utils";
 import { JudgingTab } from '@/components/organizer/JudgingTab';
 import { JuryManagementTab } from '@/components/organizer/JuryManagementTab';
 import { JuryResultsTab } from '@/components/organizer/JuryResultsTab';
@@ -65,7 +66,7 @@ export default function OrganizerDashboard() {
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState('applications');
   const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [selectedPresentation, setSelectedPresentation] = useState<{url: string; teamName: string} | null>(null);
+  const [selectedPresentation, setSelectedPresentation] = useState<{ url: string; teamName: string } | null>(null);
   const [selectedApplication, setSelectedApplication] = useState<any>(null);
   const { data: hackathon, isLoading: hackathonLoading } = useQuery({
     queryKey: ['hackathon', id],
@@ -328,448 +329,454 @@ export default function OrganizerDashboard() {
 
   return (
     <>
-    <Layout>
-      <div className="min-h-screen py-8">
-        <div className="container mx-auto px-4">
-          {/* Header */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mb-8"
-          >
-            <Link to="/dashboard">
-              <Button variant="ghost" className="mb-4">
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Back to Dashboard
-              </Button>
-            </Link>
+      <Layout>
+        <div className="min-h-screen py-12 bg-background">
+          <div className="container mx-auto px-4">
+            {/* Header */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mb-12"
+            >
+              <Link to="/dashboard">
+                <Button variant="ghost" className="mb-8 hover:bg-transparent hover:underline p-0">
+                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  BACK TO DASHBOARD
+                </Button>
+              </Link>
 
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-              <div>
-                <div className="flex items-center gap-3 mb-2">
-                  <h1 className="text-3xl font-heading font-bold">{hackathon.title}</h1>
-                  <Badge
-                    className={
-                      hackathon.status === 'live'
-                        ? 'status-live'
-                        : hackathon.status === 'draft'
-                        ? 'status-draft'
-                        : 'status-ended'
-                    }
-                  >
-                    {hackathon.status === 'live' ? 'Live' : hackathon.status === 'draft' ? 'Draft' : 'Ended'}
-                  </Badge>
-                </div>
-                <p className="text-muted-foreground">Organizer Dashboard</p>
-              </div>
-
-              <div className="flex items-center gap-2">
-                {hackathon.status === 'draft' && (
-                  <Button
-                    onClick={() => updateHackathonStatusMutation.mutate('live')}
-                    disabled={updateHackathonStatusMutation.isPending}
-                    className="bg-gradient-primary hover:opacity-90 text-primary-foreground"
-                  >
-                    {updateHackathonStatusMutation.isPending ? (
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    ) : (
-                      <Send className="w-4 h-4 mr-2" />
-                    )}
-                    Publish Hackathon
-                  </Button>
-                )}
-                {hackathon.status === 'live' && (
-                  <Button
-                    onClick={() => updateHackathonStatusMutation.mutate('ended')}
-                    disabled={updateHackathonStatusMutation.isPending}
-                    variant="outline"
-                  >
-                    {updateHackathonStatusMutation.isPending ? (
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    ) : (
-                      <Pause className="w-4 h-4 mr-2" />
-                    )}
-                    End Hackathon
-                  </Button>
-                )}
-                <Link to={`/create-hackathon/${id}`}>
-                  <Button variant="outline">
-                    <Settings className="w-4 h-4 mr-2" />
-                    Edit
-                  </Button>
-                </Link>
-              </div>
-            </div>
-          </motion.div>
-
-          {/* Stats */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8"
-          >
-            <div className="glass-card p-6">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center">
-                  <FileText className="w-6 h-6 text-primary" />
-                </div>
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b-4 border-black dark:border-white pb-6">
                 <div>
-                  <p className="text-2xl font-heading font-bold">{stats?.totalApplications || 0}</p>
-                  <p className="text-sm text-muted-foreground">Applications</p>
-                </div>
-              </div>
-            </div>
-            <div className="glass-card p-6">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-xl bg-green-500/20 flex items-center justify-center">
-                  <CheckCircle2 className="w-6 h-6 text-green-400" />
-                </div>
-                <div>
-                  <p className="text-2xl font-heading font-bold">{stats?.acceptedApplications || 0}</p>
-                  <p className="text-sm text-muted-foreground">Accepted</p>
-                </div>
-              </div>
-            </div>
-            <div className="glass-card p-6">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-xl bg-secondary/20 flex items-center justify-center">
-                  <Users className="w-6 h-6 text-secondary" />
-                </div>
-                <div>
-                  <p className="text-2xl font-heading font-bold">{stats?.totalTeams || 0}</p>
-                  <p className="text-sm text-muted-foreground">Teams</p>
-                </div>
-              </div>
-            </div>
-            <div className="glass-card p-6">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-xl bg-yellow-500/20 flex items-center justify-center">
-                  <Trophy className="w-6 h-6 text-yellow-400" />
-                </div>
-                <div>
-                  <p className="text-2xl font-heading font-bold">{stats?.totalProjects || 0}</p>
-                  <p className="text-sm text-muted-foreground">Submissions</p>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-
-          {/* Main Content */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-          >
-            <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="bg-muted/50 mb-6">
-                <TabsTrigger value="applications">
-                  <FileText className="w-4 h-4 mr-2" />
-                  Applications
-                </TabsTrigger>
-                <TabsTrigger value="submissions">
-                  <Trophy className="w-4 h-4 mr-2" />
-                  Submissions
-                </TabsTrigger>
-                <TabsTrigger value="judging">
-                  <Star className="w-4 h-4 mr-2" />
-                  Judging
-                </TabsTrigger>
-                <TabsTrigger value="jury">
-                  <Scale className="w-4 h-4 mr-2" />
-                  Jury
-                </TabsTrigger>
-                <TabsTrigger value="jury-results">
-                  <BarChart3 className="w-4 h-4 mr-2" />
-                  Jury Results
-                </TabsTrigger>
-                <TabsTrigger value="settings">
-                  <Settings className="w-4 h-4 mr-2" />
-                  Settings
-                </TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="applications">
-                <div className="glass-card p-6">
-                  <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-xl font-heading font-semibold">Manage Applications</h2>
-                    <Select value={statusFilter} onValueChange={setStatusFilter}>
-                      <SelectTrigger className="w-[150px] bg-muted/50 border-border">
-                        <SelectValue placeholder="Filter" />
-                      </SelectTrigger>
-                      <SelectContent className="glass-card border-border">
-                        <SelectItem value="all">All</SelectItem>
-                        <SelectItem value="submitted">Submitted</SelectItem>
-                        <SelectItem value="accepted">Accepted</SelectItem>
-                        <SelectItem value="rejected">Rejected</SelectItem>
-                        <SelectItem value="waitlisted">Waitlisted</SelectItem>
-                      </SelectContent>
-                    </Select>
+                  <div className="flex items-center gap-4 mb-2">
+                    <h1 className="text-5xl font-black uppercase">{hackathon.title}</h1>
+                    <Badge
+                      className={cn(
+                        "text-lg font-bold border-2 border-black px-4 py-1 rounded-none",
+                        hackathon.status === 'live'
+                          ? 'bg-green-400 text-black shadow-neo'
+                          : hackathon.status === 'draft'
+                            ? 'bg-yellow-400 text-black shadow-neo'
+                            : 'bg-red-400 text-black shadow-neo'
+                      )}
+                    >
+                      {hackathon.status === 'live' ? 'LIVE' : hackathon.status === 'draft' ? 'DRAFT' : 'ENDED'}
+                    </Badge>
                   </div>
+                  <p className="text-xl font-mono text-muted-foreground">ORGANIZER COMMAND CENTER</p>
+                </div>
 
-                  {applicationsLoading ? (
-                    <div className="flex items-center justify-center py-12">
-                      <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                <div className="flex items-center gap-4">
+                  {hackathon.status === 'draft' && (
+                    <Button
+                      onClick={() => updateHackathonStatusMutation.mutate('live')}
+                      disabled={updateHackathonStatusMutation.isPending}
+                      className="bg-primary text-black hover:bg-primary/90 border-4 border-black shadow-neo hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none font-bold uppercase"
+                    >
+                      {updateHackathonStatusMutation.isPending ? (
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      ) : (
+                        <Send className="w-4 h-4 mr-2" />
+                      )}
+                      PUBLISH SYSTEM
+                    </Button>
+                  )}
+                  {hackathon.status === 'live' && (
+                    <Button
+                      onClick={() => updateHackathonStatusMutation.mutate('ended')}
+                      disabled={updateHackathonStatusMutation.isPending}
+                      variant="outline"
+                      className="border-4 border-black dark:border-white shadow-neo hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none font-bold uppercase bg-white dark:bg-black text-black dark:text-white"
+                    >
+                      {updateHackathonStatusMutation.isPending ? (
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      ) : (
+                        <Pause className="w-4 h-4 mr-2" />
+                      )}
+                      TERMINATE EVENT
+                    </Button>
+                  )}
+                  <Link to={`/create-hackathon/${id}`}>
+                    <Button variant="outline" className="border-4 border-black dark:border-white shadow-neo hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none font-bold uppercase bg-white dark:bg-black text-black dark:text-white">
+                      <Settings className="w-4 h-4 mr-2" />
+                      CONFIGURE
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Stats */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-12"
+            >
+              <div className="bg-white dark:bg-black border-4 border-black dark:border-white p-6 shadow-neo">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 border-4 border-black bg-primary flex items-center justify-center">
+                    <FileText className="w-6 h-6 text-black" />
+                  </div>
+                  <div>
+                    <p className="text-3xl font-black">{stats?.totalApplications || 0}</p>
+                    <p className="text-sm font-bold uppercase text-muted-foreground">APPLICATIONS</p>
+                  </div>
+                </div>
+              </div>
+              <div className="bg-white dark:bg-black border-4 border-black dark:border-white p-6 shadow-neo">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 border-4 border-black bg-green-400 flex items-center justify-center">
+                    <CheckCircle2 className="w-6 h-6 text-black" />
+                  </div>
+                  <div>
+                    <p className="text-3xl font-black">{stats?.acceptedApplications || 0}</p>
+                    <p className="text-sm font-bold uppercase text-muted-foreground">ACCEPTED</p>
+                  </div>
+                </div>
+              </div>
+              <div className="bg-white dark:bg-black border-4 border-black dark:border-white p-6 shadow-neo">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 border-4 border-black bg-secondary flex items-center justify-center">
+                    <Users className="w-6 h-6 text-black" />
+                  </div>
+                  <div>
+                    <p className="text-3xl font-black">{stats?.totalTeams || 0}</p>
+                    <p className="text-sm font-bold uppercase text-muted-foreground">UNITS</p>
+                  </div>
+                </div>
+              </div>
+              <div className="bg-white dark:bg-black border-4 border-black dark:border-white p-6 shadow-neo">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 border-4 border-black bg-yellow-400 flex items-center justify-center">
+                    <Trophy className="w-6 h-6 text-black" />
+                  </div>
+                  <div>
+                    <p className="text-3xl font-black">{stats?.totalProjects || 0}</p>
+                    <p className="text-sm font-bold uppercase text-muted-foreground">SUBMISSIONS</p>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Main Content */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+            >
+              <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
+                <TabsList className="bg-transparent p-0 h-auto flex flex-wrap gap-4 justify-start">
+                  {[
+                    { value: 'applications', icon: FileText, label: 'Applications' },
+                    { value: 'submissions', icon: Trophy, label: 'Submissions' },
+                    { value: 'judging', icon: Star, label: 'Judging' },
+                    { value: 'jury', icon: Scale, label: 'Jury' },
+                    { value: 'jury-results', icon: BarChart3, label: 'Results' },
+                    { value: 'settings', icon: Settings, label: 'Settings' },
+                  ].map((tab) => (
+                    <TabsTrigger
+                      key={tab.value}
+                      value={tab.value}
+                      className="data-[state=active]:bg-black data-[state=active]:text-white dark:data-[state=active]:bg-white dark:data-[state=active]:text-black border-4 border-black dark:border-white bg-white dark:bg-black text-black dark:text-white rounded-none px-6 py-3 font-bold uppercase shadow-neo hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-sm transition-all"
+                    >
+                      <tab.icon className="w-4 h-4 mr-2" />
+                      {tab.label}
+                    </TabsTrigger>
+                  ))}
+                </TabsList>
+
+                <TabsContent value="applications" className="mt-0">
+                  <div className="bg-white dark:bg-black border-4 border-black dark:border-white p-8 shadow-neo">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+                      <h2 className="text-3xl font-black uppercase">Manage Applications</h2>
+                      <Select value={statusFilter} onValueChange={setStatusFilter}>
+                        <SelectTrigger className="w-[200px] bg-white dark:bg-black border-4 border-black dark:border-white rounded-none h-12 font-bold focus:ring-0 focus:shadow-neo transition-all">
+                          <SelectValue placeholder="FILTER STATUS" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-white dark:bg-black border-4 border-black dark:border-white rounded-none shadow-neo">
+                          <SelectItem value="all">ALL STATUS</SelectItem>
+                          <SelectItem value="submitted">SUBMITTED</SelectItem>
+                          <SelectItem value="accepted">ACCEPTED</SelectItem>
+                          <SelectItem value="rejected">REJECTED</SelectItem>
+                          <SelectItem value="waitlisted">WAITLISTED</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
-                  ) : filteredApplications && filteredApplications.length > 0 ? (
-                    <div className="space-y-4">
-                      {filteredApplications.map((app: any) => {
-                        const status = statusConfig[app.status as ApplicationStatus];
-                        const StatusIcon = status.icon;
 
-                        return (
-                          <div
-                            key={app.id}
-                            className="p-4 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors cursor-pointer"
-                            onClick={() => setSelectedApplication(app)}
-                          >
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-4">
-                                <div>
-                                  <div className="flex items-center gap-2">
-                                    <h3 className="font-semibold">
-                                      {app.team?.team_name || 'Solo Application'}
-                                    </h3>
-                                    <Badge className={status.className}>
-                                      <StatusIcon className="w-3 h-3 mr-1" />
-                                      {status.label}
-                                    </Badge>
-                                    {app.application_data?.domain && (
-                                      <Badge variant="outline" className="text-xs">
-                                        {app.application_data.domain}
-                                      </Badge>
+                    {applicationsLoading ? (
+                      <div className="flex items-center justify-center py-12">
+                        <Loader2 className="w-12 h-12 animate-spin text-black dark:text-white" />
+                      </div>
+                    ) : filteredApplications && filteredApplications.length > 0 ? (
+                      <div className="grid gap-4">
+                        {filteredApplications.map((app: any) => {
+                          const status = statusConfig[app.status as ApplicationStatus];
+                          const StatusIcon = status.icon;
+
+                          return (
+                            <div
+                              key={app.id}
+                              className="border-4 border-black dark:border-white p-6 hover:bg-muted/10 transition-colors cursor-pointer group relative"
+                              onClick={() => setSelectedApplication(app)}
+                            >
+                              <div className="absolute top-0 left-0 w-full h-1 bg-black dark:bg-white opacity-0 group-hover:opacity-100 transition-opacity" />
+
+                              <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                                <div className="flex items-start gap-4">
+                                  <div className="w-12 h-12 border-4 border-black bg-muted flex items-center justify-center flex-shrink-0">
+                                    {app.profile?.avatar_url ? (
+                                      <img src={app.profile.avatar_url} alt="" className="w-full h-full object-cover" />
+                                    ) : (
+                                      <Users className="w-6 h-6" />
                                     )}
                                   </div>
-                                  <p className="text-sm text-muted-foreground flex items-center gap-2 mt-1">
-                                    <Mail className="w-3 h-3" />
-                                    {app.profile?.email || 'No email'}
-                                    <span className="mx-2">•</span>
-                                    Applied {format(new Date(app.created_at), 'MMM d, yyyy')}
-                                  </p>
-                                </div>
-                              </div>
-
-                              <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
-                                {app.status !== 'accepted' && (
-                                  <Button
-                                    size="sm"
-                                    onClick={() =>
-                                      updateApplicationMutation.mutate({ appId: app.id, status: 'accepted' })
-                                    }
-                                    disabled={updateApplicationMutation.isPending}
-                                    className="bg-green-500/20 text-green-400 hover:bg-green-500/30 border border-green-500/30"
-                                  >
-                                    <CheckCircle2 className="w-4 h-4 mr-1" />
-                                    Accept
-                                  </Button>
-                                )}
-                                {app.status !== 'waitlisted' && app.status !== 'accepted' && (
-                                  <Button
-                                    size="sm"
-                                    variant="outline"
-                                    onClick={() =>
-                                      updateApplicationMutation.mutate({ appId: app.id, status: 'waitlisted' })
-                                    }
-                                    disabled={updateApplicationMutation.isPending}
-                                    className="text-yellow-400 border-yellow-500/30 hover:bg-yellow-500/10"
-                                  >
-                                    <Clock className="w-4 h-4 mr-1" />
-                                    Waitlist
-                                  </Button>
-                                )}
-                                {app.status !== 'rejected' && (
-                                  <Button
-                                    size="sm"
-                                    variant="outline"
-                                    onClick={() =>
-                                      updateApplicationMutation.mutate({ appId: app.id, status: 'rejected' })
-                                    }
-                                    disabled={updateApplicationMutation.isPending}
-                                    className="text-red-400 border-red-500/30 hover:bg-red-500/10"
-                                  >
-                                    <XCircle className="w-4 h-4 mr-1" />
-                                    Reject
-                                  </Button>
-                                )}
-                              </div>
-                            </div>
-
-                            {(app.application_data || app.presentation_url) && (
-                              <div className="mt-4 pt-4 border-t border-border">
-                                <div className="grid md:grid-cols-2 gap-4 text-sm">
-                                  {app.application_data?.project_idea && (
-                                    <div>
-                                      <p className="font-medium text-muted-foreground mb-1">Project Idea</p>
-                                      <p>{app.application_data.project_idea}</p>
+                                  <div>
+                                    <div className="flex flex-wrap items-center gap-3 mb-2">
+                                      <h3 className="text-xl font-black uppercase">
+                                        {app.team?.team_name || 'SOLO OPERATIVE'}
+                                      </h3>
+                                      <Badge className={cn("rounded-none border-2 border-black font-bold uppercase", status.className)}>
+                                        <StatusIcon className="w-3 h-3 mr-1" />
+                                        {status.label}
+                                      </Badge>
+                                      {app.application_data?.domain && (
+                                        <Badge variant="outline" className="rounded-none border-2 border-black font-bold uppercase bg-white">
+                                          {app.application_data.domain}
+                                        </Badge>
+                                      )}
                                     </div>
-                                  )}
-                                  {app.application_data?.why_join && (
-                                    <div>
-                                      <p className="font-medium text-muted-foreground mb-1">Why Join</p>
-                                      <p>{app.application_data.why_join}</p>
-                                    </div>
-                                  )}
+                                    <p className="font-mono text-sm text-muted-foreground flex items-center gap-2">
+                                      <Mail className="w-3 h-3" />
+                                      {app.profile?.email || 'NO COMMS'}
+                                      <span className="mx-2">|</span>
+                                      INITIATED {format(new Date(app.created_at), 'MMM d, yyyy').toUpperCase()}
+                                    </p>
+                                  </div>
                                 </div>
-                                {app.presentation_url && (
-                                  <div className="mt-4">
+
+                                <div className="flex items-center gap-3" onClick={(e) => e.stopPropagation()}>
+                                  {app.status !== 'accepted' && (
+                                    <Button
+                                      size="sm"
+                                      onClick={() =>
+                                        updateApplicationMutation.mutate({ appId: app.id, status: 'accepted' })
+                                      }
+                                      disabled={updateApplicationMutation.isPending}
+                                      className="bg-green-400 text-black border-2 border-black hover:bg-green-500 font-bold uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[1px] hover:translate-y-[1px]"
+                                    >
+                                      <CheckCircle2 className="w-4 h-4 mr-1" />
+                                      AUTHORIZE
+                                    </Button>
+                                  )}
+                                  {app.status !== 'waitlisted' && app.status !== 'accepted' && (
                                     <Button
                                       size="sm"
                                       variant="outline"
-                                      onClick={() => setSelectedPresentation({
-                                        url: app.presentation_url,
-                                        teamName: app.team?.team_name || 'Team'
-                                      })}
-                                      className="gap-2"
+                                      onClick={() =>
+                                        updateApplicationMutation.mutate({ appId: app.id, status: 'waitlisted' })
+                                      }
+                                      disabled={updateApplicationMutation.isPending}
+                                      className="bg-yellow-400 text-black border-2 border-black hover:bg-yellow-500 font-bold uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[1px] hover:translate-y-[1px]"
                                     >
-                                      <Presentation className="w-4 h-4" />
-                                      View Presentation
+                                      <Clock className="w-4 h-4 mr-1" />
+                                      HOLD
                                     </Button>
-                                  </div>
-                                )}
+                                  )}
+                                  {app.status !== 'rejected' && (
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      onClick={() =>
+                                        updateApplicationMutation.mutate({ appId: app.id, status: 'rejected' })
+                                      }
+                                      disabled={updateApplicationMutation.isPending}
+                                      className="bg-red-400 text-black border-2 border-black hover:bg-red-500 font-bold uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[1px] hover:translate-y-[1px]"
+                                    >
+                                      <XCircle className="w-4 h-4 mr-1" />
+                                      DENY
+                                    </Button>
+                                  )}
+                                </div>
                               </div>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  ) : (
-                    <div className="text-center py-12">
-                      <FileText className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-                      <p className="text-muted-foreground">No applications yet</p>
-                    </div>
-                  )}
-                </div>
-              </TabsContent>
 
-              <TabsContent value="submissions">
-                <div className="glass-card p-6">
-                  <h2 className="text-xl font-heading font-semibold mb-6">Project Submissions</h2>
-
-                  {projects && projects.length > 0 ? (
-                    <div className="grid md:grid-cols-2 gap-4">
-                      {projects.map((project: any) => (
-                        <div
-                          key={project.id}
-                          className="p-6 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors"
-                        >
-                          <div className="flex items-start justify-between mb-3">
-                            <div>
-                              <h3 className="font-semibold">{project.title}</h3>
-                              <p className="text-sm text-muted-foreground">
-                                by {project.team?.team_name || 'Unknown Team'}
-                              </p>
+                              {(app.application_data || app.presentation_url) && (
+                                <div className="mt-6 pt-6 border-t-2 border-dashed border-muted-foreground/30">
+                                  <div className="grid md:grid-cols-2 gap-6 text-sm">
+                                    {app.application_data?.project_idea && (
+                                      <div>
+                                        <p className="font-bold uppercase mb-2">mission_concept:</p>
+                                        <p className="font-mono text-muted-foreground">{app.application_data.project_idea}</p>
+                                      </div>
+                                    )}
+                                    {app.application_data?.why_join && (
+                                      <div>
+                                        <p className="font-bold uppercase mb-2">motivation_log:</p>
+                                        <p className="font-mono text-muted-foreground">{app.application_data.why_join}</p>
+                                      </div>
+                                    )}
+                                  </div>
+                                  {app.presentation_url && (
+                                    <div className="mt-6">
+                                      <Button
+                                        size="sm"
+                                        variant="outline"
+                                        onClick={() => setSelectedPresentation({
+                                          url: app.presentation_url,
+                                          teamName: app.team?.team_name || 'Team'
+                                        })}
+                                        className="gap-2 border-2 border-black font-bold uppercase hover:bg-muted"
+                                      >
+                                        <Presentation className="w-4 h-4" />
+                                        ACCESS BRIEFING
+                                      </Button>
+                                    </div>
+                                  )}
+                                </div>
+                              )}
                             </div>
-                            {project.submitted && (
-                              <Badge className="bg-green-500/20 text-green-400 border border-green-500/30">
-                                Submitted
-                              </Badge>
-                            )}
-                          </div>
-
-                          {project.description && (
-                            <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
-                              {project.description}
-                            </p>
-                          )}
-
-                          {project.tech_stack && project.tech_stack.length > 0 && (
-                            <div className="flex flex-wrap gap-1 mb-4">
-                              {project.tech_stack.slice(0, 5).map((tech: string) => (
-                                <Badge key={tech} variant="outline" className="text-xs">
-                                  {tech}
-                                </Badge>
-                              ))}
-                            </div>
-                          )}
-
-                          <div className="flex gap-2">
-                            {project.repo_url && (
-                              <a href={project.repo_url} target="_blank" rel="noopener noreferrer">
-                                <Button size="sm" variant="outline">
-                                  <Eye className="w-4 h-4 mr-1" />
-                                  GitHub
-                                </Button>
-                              </a>
-                            )}
-                            {project.demo_url && (
-                              <a href={project.demo_url} target="_blank" rel="noopener noreferrer">
-                                <Button size="sm" variant="outline">
-                                  <Play className="w-4 h-4 mr-1" />
-                                  Demo
-                                </Button>
-                              </a>
-                            )}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="text-center py-12">
-                      <Trophy className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-                      <p className="text-muted-foreground">No submissions yet</p>
-                    </div>
-                  )}
-                </div>
-              </TabsContent>
-
-              <TabsContent value="judging">
-                <JudgingTab hackathonId={id!} />
-              </TabsContent>
-
-              <TabsContent value="jury">
-                <JuryManagementTab hackathonId={id!} />
-              </TabsContent>
-
-              <TabsContent value="jury-results">
-                <JuryResultsTab hackathonId={id!} />
-              </TabsContent>
-
-              <TabsContent value="settings">
-                <div className="glass-card p-6">
-                  <h2 className="text-xl font-heading font-semibold mb-6">Hackathon Settings</h2>
-                  
-                  <div className="space-y-6">
-                    {/* Gallery Toggle */}
-                    <div className="flex items-center justify-between p-4 rounded-lg bg-muted/30">
-                      <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center">
-                          <Image className="w-6 h-6 text-primary" />
-                        </div>
-                        <div>
-                          <h3 className="font-semibold">Project Gallery</h3>
-                          <p className="text-sm text-muted-foreground">
-                            Enable the gallery section for participants to submit and view projects
-                          </p>
-                        </div>
+                          );
+                        })}
                       </div>
-                      <div className="flex items-center gap-3">
-                        <Label htmlFor="gallery-toggle" className="text-sm text-muted-foreground">
-                          {hackathon.is_gallery_public ? 'Enabled' : 'Disabled'}
-                        </Label>
-                        <Switch
-                          id="gallery-toggle"
-                          checked={hackathon.is_gallery_public || false}
-                          onCheckedChange={(checked) => toggleGalleryMutation.mutate(checked)}
-                          disabled={toggleGalleryMutation.isPending}
-                        />
-                      </div>
-                    </div>
-
-                    {hackathon.is_gallery_public && (
-                      <div className="p-4 rounded-lg bg-green-500/10 border border-green-500/30">
-                        <p className="text-sm text-green-400">
-                          ✓ Gallery is enabled. Accepted participants can now submit their projects and view all submissions in the hackathon page.
-                        </p>
+                    ) : (
+                      <div className="text-center py-12 border-4 border-dashed border-muted-foreground/20">
+                        <FileText className="w-16 h-16 mx-auto mb-4 text-muted-foreground opacity-50" />
+                        <p className="text-xl font-bold text-muted-foreground uppercase">NO DATA STREAMS FOUND</p>
                       </div>
                     )}
                   </div>
-                </div>
-              </TabsContent>
-            </Tabs>
-          </motion.div>
+                </TabsContent>
+
+                <TabsContent value="submissions">
+                  <div className="bg-white dark:bg-black border-4 border-black dark:border-white p-8 shadow-neo">
+                    <h2 className="text-3xl font-black uppercase mb-8">Project Submissions</h2>
+
+                    {projects && projects.length > 0 ? (
+                      <div className="grid md:grid-cols-2 gap-6">
+                        {projects.map((project: any) => (
+                          <div
+                            key={project.id}
+                            className="border-4 border-black dark:border-white p-6 relative hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-neo transition-all bg-white dark:bg-black"
+                          >
+                            <div className="flex items-start justify-between mb-4">
+                              <div>
+                                <h3 className="text-xl font-black uppercase">{project.title}</h3>
+                                <p className="text-sm font-mono text-muted-foreground">
+                                  UNIT: {project.team?.team_name || 'UNKNOWN'}
+                                </p>
+                              </div>
+                              {project.submitted && (
+                                <Badge className="bg-green-400 text-black border-2 border-black rounded-none font-bold uppercase">
+                                  SUBMITTED
+                                </Badge>
+                              )}
+                            </div>
+
+                            {project.description && (
+                              <p className="text-sm font-mono mb-6 line-clamp-2 border-l-2 border-black pl-3">
+                                {project.description}
+                              </p>
+                            )}
+
+                            {project.tech_stack && project.tech_stack.length > 0 && (
+                              <div className="flex flex-wrap gap-2 mb-6">
+                                {project.tech_stack.slice(0, 5).map((tech: string) => (
+                                  <Badge key={tech} variant="outline" className="border-2 border-black rounded-none font-bold uppercase text-xs">
+                                    {tech}
+                                  </Badge>
+                                ))}
+                              </div>
+                            )}
+
+                            <div className="flex gap-3 pt-4 border-t-2 border-black">
+                              {project.repo_url && (
+                                <a href={project.repo_url} target="_blank" rel="noopener noreferrer">
+                                  <Button size="sm" variant="outline" className="border-2 border-black font-bold uppercase hover:bg-black hover:text-white transition-colors">
+                                    <Eye className="w-4 h-4 mr-2" />
+                                    SOURCE
+                                  </Button>
+                                </a>
+                              )}
+                              {project.demo_url && (
+                                <a href={project.demo_url} target="_blank" rel="noopener noreferrer">
+                                  <Button size="sm" variant="outline" className="border-2 border-black font-bold uppercase hover:bg-black hover:text-white transition-colors">
+                                    <Play className="w-4 h-4 mr-2" />
+                                    EXECUTE DEMO
+                                  </Button>
+                                </a>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-center py-12 border-4 border-dashed border-muted-foreground/20">
+                        <Trophy className="w-16 h-16 mx-auto mb-4 text-muted-foreground opacity-50" />
+                        <p className="text-xl font-bold text-muted-foreground uppercase">NO ARTIFACTS SUBMITTED</p>
+                      </div>
+                    )}
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="judging">
+                  <JudgingTab hackathonId={id!} />
+                </TabsContent>
+
+                <TabsContent value="jury">
+                  <JuryManagementTab hackathonId={id!} />
+                </TabsContent>
+
+                <TabsContent value="jury-results">
+                  <JuryResultsTab hackathonId={id!} />
+                </TabsContent>
+
+                <TabsContent value="settings">
+                  <div className="bg-white dark:bg-black border-4 border-black dark:border-white p-8 shadow-neo">
+                    <h2 className="text-3xl font-black uppercase mb-8">System Configuration</h2>
+
+                    <div className="space-y-6">
+                      {/* Gallery Toggle */}
+                      <div className="flex items-center justify-between p-6 border-4 border-black bg-muted/20">
+                        <div className="flex items-center gap-6">
+                          <div className="w-16 h-16 border-4 border-black bg-white flex items-center justify-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                            <Image className="w-8 h-8 text-black" />
+                          </div>
+                          <div>
+                            <h3 className="text-xl font-black uppercase">Project Gallery Mode</h3>
+                            <p className="font-mono text-sm text-muted-foreground mt-1">
+                              ENABLE PUBLIC ACCESS TO SUBMISSION ARTIFACTS
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-4 bg-white border-4 border-black p-2 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+                          <Label htmlFor="gallery-toggle" className="font-bold uppercase pr-2 border-r-2 border-black">
+                            {hackathon.is_gallery_public ? 'ONLINE' : 'OFFLINE'}
+                          </Label>
+                          <Switch
+                            id="gallery-toggle"
+                            checked={hackathon.is_gallery_public || false}
+                            onCheckedChange={(checked) => toggleGalleryMutation.mutate(checked)}
+                            disabled={toggleGalleryMutation.isPending}
+                            className="data-[state=checked]:bg-green-400 data-[state=unchecked]:bg-gray-300 border-2 border-black"
+                          />
+                        </div>
+                      </div>
+
+                      {hackathon.is_gallery_public && (
+                        <div className="p-4 bg-green-400 border-4 border-black shadow-neo">
+                          <p className="font-bold text-black flex items-center gap-2 uppercase">
+                            <CheckCircle2 className="w-5 h-5" />
+                            GALLERY PROTOCOLS ACTIVE. SUBMISSIONS PUBLICLY INDEXED.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </TabsContent>
+              </Tabs>
+            </motion.div>
+          </div>
         </div>
-      </div>
-    </Layout>
+      </Layout>
 
       <PresentationViewModal
         open={!!selectedPresentation}

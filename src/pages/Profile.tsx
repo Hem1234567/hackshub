@@ -83,7 +83,7 @@ export default function Profile() {
   const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const resumeInputRef = useRef<HTMLInputElement>(null);
-  
+
   const [isEditing, setIsEditing] = useState(false);
   const [skills, setSkills] = useState<string[]>(profile?.skills || []);
   const [newSkill, setNewSkill] = useState('');
@@ -333,41 +333,41 @@ export default function Profile() {
     });
   };
 
-  const displayName = profile?.first_name && profile?.last_name 
-    ? `${profile.first_name} ${profile.last_name}` 
+  const displayName = profile?.first_name && profile?.last_name
+    ? `${profile.first_name} ${profile.last_name}`
     : profile?.full_name || 'Anonymous Hacker';
 
   return (
     <Layout>
-      <div className="min-h-screen py-8">
+      <div className="min-h-screen py-12 bg-background">
         <div className="container mx-auto px-4 max-w-4xl">
           {/* Profile Completeness Indicator */}
           <ProfileCompleteness profile={profile} />
-          
+
           {/* Profile Header */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="glass-card p-8 mb-8"
+            className="bg-card border-4 border-black dark:border-white p-8 mb-8 shadow-neo"
           >
-            <div className="flex flex-col md:flex-row items-start gap-6">
+            <div className="flex flex-col md:flex-row items-start gap-8">
               {/* Avatar */}
               <div className="relative group">
-                <Avatar className="w-32 h-32 border-4 border-primary/30">
-                  <AvatarImage src={profile?.avatar_url || undefined} />
-                  <AvatarFallback className="bg-gradient-primary text-primary-foreground text-3xl">
+                <Avatar className="w-32 h-32 border-4 border-black dark:border-white shadow-neo rounded-full">
+                  <AvatarImage src={profile?.avatar_url || undefined} className="object-cover" />
+                  <AvatarFallback className="bg-primary text-black text-3xl font-black rounded-full">
                     {profile?.first_name?.[0] || profile?.full_name?.[0] || user?.email?.[0]?.toUpperCase() || 'U'}
                   </AvatarFallback>
                 </Avatar>
                 <button
                   onClick={() => fileInputRef.current?.click()}
                   disabled={isUploadingAvatar}
-                  className="absolute inset-0 flex items-center justify-center bg-background/80 opacity-0 group-hover:opacity-100 rounded-full transition-opacity"
+                  className="absolute -bottom-2 -right-2 bg-black text-white p-2 border-2 border-white hover:bg-black/80 transition-colors shadow-sm"
                 >
                   {isUploadingAvatar ? (
-                    <Loader2 className="w-8 h-8 animate-spin" />
+                    <Loader2 className="w-4 h-4 animate-spin" />
                   ) : (
-                    <Camera className="w-8 h-8" />
+                    <Camera className="w-4 h-4" />
                   )}
                 </button>
                 <input
@@ -381,95 +381,99 @@ export default function Profile() {
 
               {/* Profile Info */}
               <div className="flex-1 w-full">
-                <div className="flex items-start justify-between mb-4">
+                <div className="flex flex-col md:flex-row md:items-start justify-between mb-4 gap-4">
                   <div>
-                    <h1 className="text-3xl font-heading font-bold">{displayName}</h1>
+                    <h1 className="text-4xl font-black uppercase tracking-tighter mb-1">{displayName}</h1>
                     {profile?.username && (
-                      <p className="text-muted-foreground">@{profile.username}</p>
+                      <p className="text-lg text-muted-foreground font-mono font-bold">@{profile.username}</p>
                     )}
                   </div>
                   {!isEditing ? (
-                    <Button variant="outline" onClick={() => setIsEditing(true)}>
+                    <Button
+                      variant="outline"
+                      onClick={() => setIsEditing(true)}
+                      className="border-4 border-black hover:bg-black hover:text-white uppercase font-bold shadow-neo hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]"
+                    >
                       <Edit2 className="w-4 h-4 mr-2" />
                       Edit Profile
                     </Button>
                   ) : (
                     <div className="flex gap-2">
-                      <Button variant="ghost" onClick={cancelEdit}>
+                      <Button variant="ghost" onClick={cancelEdit} className="uppercase font-bold hover:bg-destructive hover:text-white">
                         <X className="w-4 h-4 mr-2" />
                         Cancel
                       </Button>
                       <Button
                         onClick={handleSubmit(onSubmit)}
                         disabled={updateProfileMutation.isPending}
-                        className="bg-gradient-primary hover:opacity-90 text-primary-foreground"
+                        className="bg-primary text-black hover:bg-primary/90 border-4 border-black shadow-neo hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] uppercase font-bold"
                       >
                         {updateProfileMutation.isPending ? (
                           <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                         ) : (
                           <Save className="w-4 h-4 mr-2" />
                         )}
-                        Save
+                        Save Changes
                       </Button>
                     </div>
                   )}
                 </div>
 
                 {isEditing ? (
-                  <form className="space-y-6">
+                  <form className="space-y-8 mt-6">
                     {/* Personal Information */}
-                    <div>
-                      <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                        <User className="w-5 h-5 text-primary" />
-                        Personal Information
+                    <div className="border-t-4 border-black pt-6">
+                      <h3 className="text-xl font-black uppercase mb-6 flex items-center gap-2">
+                        <User className="w-6 h-6" />
+                        Identity Protocols
                       </h3>
-                      <div className="grid md:grid-cols-2 gap-4">
+                      <div className="grid md:grid-cols-2 gap-6">
                         <div className="space-y-2">
-                          <Label htmlFor="first_name">First Name *</Label>
+                          <Label htmlFor="first_name" className="uppercase font-bold">First Name *</Label>
                           <Input
                             id="first_name"
                             {...register('first_name')}
-                            className="bg-muted/50 border-border"
+                            className="bg-white dark:bg-black border-4 border-black dark:border-white font-mono"
                           />
                           {errors.first_name && (
-                            <p className="text-sm text-destructive">{errors.first_name.message}</p>
+                            <p className="text-sm text-destructive font-bold">{errors.first_name.message}</p>
                           )}
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="last_name">Last Name *</Label>
+                          <Label htmlFor="last_name" className="uppercase font-bold">Last Name *</Label>
                           <Input
                             id="last_name"
                             {...register('last_name')}
-                            className="bg-muted/50 border-border"
+                            className="bg-white dark:bg-black border-4 border-black dark:border-white font-mono"
                           />
                           {errors.last_name && (
-                            <p className="text-sm text-destructive">{errors.last_name.message}</p>
+                            <p className="text-sm text-destructive font-bold">{errors.last_name.message}</p>
                           )}
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="username">Username</Label>
+                          <Label htmlFor="username" className="uppercase font-bold">Username</Label>
                           <Input
                             id="username"
                             {...register('username')}
-                            className="bg-muted/50 border-border"
+                            className="bg-white dark:bg-black border-4 border-black dark:border-white font-mono"
                             placeholder="@username"
                           />
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="age">Age</Label>
+                          <Label htmlFor="age" className="uppercase font-bold">Age</Label>
                           <Input
                             id="age"
                             type="number"
                             {...register('age')}
-                            className="bg-muted/50 border-border"
+                            className="bg-white dark:bg-black border-4 border-black dark:border-white font-mono"
                             placeholder="18"
                           />
                           {errors.age && (
-                            <p className="text-sm text-destructive">{errors.age.message}</p>
+                            <p className="text-sm text-destructive font-bold">{errors.age.message}</p>
                           )}
                         </div>
                         <div className="space-y-2">
-                          <Label>Gender</Label>
+                          <Label className="uppercase font-bold">Gender</Label>
                           <GenderSelect
                             value={gender}
                             onValueChange={(value) => {
@@ -479,31 +483,31 @@ export default function Profile() {
                           />
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="phone_number">Phone Number</Label>
+                          <Label htmlFor="phone_number" className="uppercase font-bold">Phone Number</Label>
                           <div className="relative">
                             <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                             <Input
                               id="phone_number"
                               {...register('phone_number')}
-                              className="pl-10 bg-muted/50 border-border"
+                              className="pl-10 bg-white dark:bg-black border-4 border-black dark:border-white font-mono"
                               placeholder="+1 (555) 000-0000"
                             />
                           </div>
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="college">College/University</Label>
+                          <Label htmlFor="college" className="uppercase font-bold">College/University</Label>
                           <div className="relative">
                             <GraduationCap className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                             <Input
                               id="college"
                               {...register('college')}
-                              className="pl-10 bg-muted/50 border-border"
+                              className="pl-10 bg-white dark:bg-black border-4 border-black dark:border-white font-mono"
                               placeholder="MIT"
                             />
                           </div>
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="country">Country of Residence</Label>
+                          <Label htmlFor="country" className="uppercase font-bold">Country of Residence</Label>
                           <CountrySelect
                             value={country}
                             onValueChange={(value) => {
@@ -513,7 +517,7 @@ export default function Profile() {
                           />
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="level_of_study">Level of Study</Label>
+                          <Label htmlFor="level_of_study" className="uppercase font-bold">Level of Study</Label>
                           <Select
                             value={levelOfStudy}
                             onValueChange={(value) => {
@@ -521,12 +525,12 @@ export default function Profile() {
                               setValue('level_of_study', value);
                             }}
                           >
-                            <SelectTrigger className="bg-muted/50 border-border">
-                              <SelectValue placeholder="Select level" />
+                            <SelectTrigger className="bg-white dark:bg-black border-4 border-black dark:border-white font-mono rounded-none">
+                              <SelectValue placeholder="SELECT LEVEL" />
                             </SelectTrigger>
-                            <SelectContent>
+                            <SelectContent className="border-4 border-black dark:border-white rounded-none">
                               {LEVEL_OF_STUDY_OPTIONS.map((level) => (
-                                <SelectItem key={level} value={level}>
+                                <SelectItem key={level} value={level} className="font-mono uppercase focus:bg-primary focus:text-black">
                                   {level}
                                 </SelectItem>
                               ))}
@@ -537,77 +541,77 @@ export default function Profile() {
                     </div>
 
                     {/* Bio */}
-                    <div className="space-y-2">
-                      <Label htmlFor="bio">Bio</Label>
+                    <div className="border-t-4 border-black pt-6">
+                      <Label htmlFor="bio" className="uppercase font-bold text-lg mb-4 block">Bio Algorithm</Label>
                       <Textarea
                         id="bio"
                         {...register('bio')}
-                        className="bg-muted/50 border-border resize-none"
-                        rows={3}
-                        placeholder="Tell us about yourself..."
+                        className="bg-white dark:bg-black border-4 border-black dark:border-white font-mono resize-none"
+                        rows={4}
+                        placeholder="EXECUTE self_description();"
                       />
                     </div>
 
                     {/* Social Links */}
-                    <div>
-                      <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                        <Link className="w-5 h-5 text-primary" />
-                        Social Links
+                    <div className="border-t-4 border-black pt-6">
+                      <h3 className="text-xl font-black uppercase mb-6 flex items-center gap-2">
+                        <Link className="w-6 h-6" />
+                        Network Nodes
                       </h3>
-                      <div className="grid md:grid-cols-2 gap-4">
+                      <div className="grid md:grid-cols-2 gap-6">
                         <div className="space-y-2">
-                          <Label htmlFor="linkedin_url">LinkedIn</Label>
+                          <Label htmlFor="linkedin_url" className="uppercase font-bold">LinkedIn</Label>
                           <div className="relative">
                             <Linkedin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                             <Input
                               id="linkedin_url"
                               {...register('linkedin_url')}
-                              className="pl-10 bg-muted/50 border-border"
+                              className="pl-10 bg-white dark:bg-black border-4 border-black dark:border-white font-mono"
                               placeholder="https://linkedin.com/in/username"
                             />
                           </div>
                           {errors.linkedin_url && (
-                            <p className="text-sm text-destructive">{errors.linkedin_url.message}</p>
+                            <p className="text-sm text-destructive font-bold">{errors.linkedin_url.message}</p>
                           )}
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="github_url">GitHub</Label>
+                          <Label htmlFor="github_url" className="uppercase font-bold">GitHub</Label>
                           <div className="relative">
                             <Github className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                             <Input
                               id="github_url"
                               {...register('github_url')}
-                              className="pl-10 bg-muted/50 border-border"
+                              className="pl-10 bg-white dark:bg-black border-4 border-black dark:border-white font-mono"
                               placeholder="https://github.com/username"
                             />
                           </div>
                           {errors.github_url && (
-                            <p className="text-sm text-destructive">{errors.github_url.message}</p>
+                            <p className="text-sm text-destructive font-bold">{errors.github_url.message}</p>
                           )}
                         </div>
                         <div className="space-y-2 md:col-span-2">
-                          <Label htmlFor="portfolio_url">Portfolio</Label>
+                          <Label htmlFor="portfolio_url" className="uppercase font-bold">Portfolio Mainframe</Label>
                           <div className="relative">
                             <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                             <Input
                               id="portfolio_url"
                               {...register('portfolio_url')}
-                              className="pl-10 bg-muted/50 border-border"
+                              className="pl-10 bg-white dark:bg-black border-4 border-black dark:border-white font-mono"
                               placeholder="https://your-portfolio.com"
                             />
                           </div>
                           {errors.portfolio_url && (
-                            <p className="text-sm text-destructive">{errors.portfolio_url.message}</p>
+                            <p className="text-sm text-destructive font-bold">{errors.portfolio_url.message}</p>
                           )}
                         </div>
                       </div>
                     </div>
 
                     {/* Resume Upload */}
-                    <div>
-                      <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                        <FileText className="w-5 h-5 text-primary" />
-                        Resume
+                    <div className="border-t-4 border-black pt-6">
+                      <h3 className="text-xl font-black uppercase mb-6 flex items-center gap-2">
+                        <FileText className="w-6 h-6" />
+                        Credentials
                       </h3>
                       <div className="flex items-center gap-4">
                         <Button
@@ -615,23 +619,24 @@ export default function Profile() {
                           variant="outline"
                           onClick={() => resumeInputRef.current?.click()}
                           disabled={isUploadingResume}
+                          className="border-4 border-black uppercase font-bold hover:bg-black hover:text-white"
                         >
                           {isUploadingResume ? (
                             <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                           ) : (
                             <Upload className="w-4 h-4 mr-2" />
                           )}
-                          Upload Resume (PDF)
+                          Upload Data (PDF)
                         </Button>
                         {profile?.resume_url && (
                           <a
                             href={profile.resume_url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-primary hover:underline flex items-center gap-1"
+                            className="text-primary hover:underline flex items-center gap-1 font-bold uppercase"
                           >
                             <FileText className="w-4 h-4" />
-                            View Current Resume
+                            View Current Data
                           </a>
                         )}
                         <input
@@ -642,17 +647,19 @@ export default function Profile() {
                           className="hidden"
                         />
                       </div>
-                      <p className="text-sm text-muted-foreground mt-2">
-                        Max file size: 10MB. Accepted format: PDF
+                      <p className="text-xs font-mono text-muted-foreground mt-2 uppercase">
+                        Max Capacity: 10MB. Format: PDF.
                       </p>
                     </div>
                   </form>
                 ) : (
                   <>
                     {profile?.bio && (
-                      <p className="text-muted-foreground mb-4">{profile.bio}</p>
+                      <div className="bg-muted/30 p-4 border-2 border-black/10 font-mono text-sm mb-6">
+                        <p>{profile.bio}</p>
+                      </div>
                     )}
-                    <div className="flex flex-wrap gap-4 text-sm text-muted-foreground mb-4">
+                    <div className="flex flex-wrap gap-4 text-sm font-bold uppercase text-muted-foreground mb-6">
                       {user?.email && (
                         <span className="flex items-center gap-1">
                           <Mail className="w-4 h-4" />
@@ -678,7 +685,7 @@ export default function Profile() {
                         </span>
                       )}
                       {profile?.level_of_study && (
-                        <Badge variant="outline">{profile.level_of_study}</Badge>
+                        <Badge variant="outline" className="border-black font-bold">{profile.level_of_study}</Badge>
                       )}
                       {profile?.age && (
                         <span className="flex items-center gap-1">
@@ -686,7 +693,7 @@ export default function Profile() {
                         </span>
                       )}
                     </div>
-                    
+
                     {/* Social Links Display */}
                     <div className="flex flex-wrap gap-3">
                       {profile?.linkedin_url && (
@@ -694,7 +701,7 @@ export default function Profile() {
                           href={profile.linkedin_url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex items-center gap-1 text-primary hover:underline"
+                          className="flex items-center gap-1 bg-blue-100 text-blue-700 px-3 py-1 font-bold uppercase border-2 border-transparent hover:border-black transition-all"
                         >
                           <Linkedin className="w-4 h-4" />
                           LinkedIn
@@ -705,7 +712,7 @@ export default function Profile() {
                           href={profile.github_url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex items-center gap-1 text-primary hover:underline"
+                          className="flex items-center gap-1 bg-gray-100 text-gray-800 px-3 py-1 font-bold uppercase border-2 border-transparent hover:border-black transition-all"
                         >
                           <Github className="w-4 h-4" />
                           GitHub
@@ -716,7 +723,7 @@ export default function Profile() {
                           href={profile.portfolio_url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex items-center gap-1 text-primary hover:underline"
+                          className="flex items-center gap-1 bg-emerald-100 text-emerald-800 px-3 py-1 font-bold uppercase border-2 border-transparent hover:border-black transition-all"
                         >
                           <Globe className="w-4 h-4" />
                           Portfolio
@@ -727,7 +734,7 @@ export default function Profile() {
                           href={profile.resume_url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex items-center gap-1 text-primary hover:underline"
+                          className="flex items-center gap-1 bg-amber-100 text-amber-800 px-3 py-1 font-bold uppercase border-2 border-transparent hover:border-black transition-all"
                         >
                           <FileText className="w-4 h-4" />
                           Resume
@@ -740,29 +747,32 @@ export default function Profile() {
             </div>
 
             {/* Skills Section */}
-            <div className="mt-8 pt-6 border-t border-border">
-              <h3 className="text-lg font-heading font-semibold mb-4">Skills</h3>
+            <div className="mt-8 pt-8 border-t-4 border-black">
+              <h3 className="text-2xl font-black uppercase mb-6 flex items-center gap-2">
+                <Users className="w-6 h-6" />
+                Technical Arsenal
+              </h3>
               {isEditing ? (
                 <div className="space-y-4">
                   <div className="flex gap-2">
                     <Input
                       value={newSkill}
                       onChange={(e) => setNewSkill(e.target.value)}
-                      placeholder="Add a skill..."
-                      className="bg-muted/50 border-border"
+                      placeholder="Add a skill module..."
+                      className="bg-white dark:bg-black border-4 border-black dark:border-white font-mono"
                       onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addSkill())}
                     />
-                    <Button type="button" onClick={addSkill} variant="outline">
+                    <Button type="button" onClick={addSkill} variant="outline" className="border-4 border-black hover:bg-black hover:text-white">
                       <Plus className="w-4 h-4" />
                     </Button>
                   </div>
-                  
+
                   {skills.length > 0 && (
                     <div className="flex flex-wrap gap-2">
                       {skills.map((skill) => (
                         <Badge
                           key={skill}
-                          className="bg-primary/20 text-primary border border-primary/30 cursor-pointer"
+                          className="bg-primary text-black border-2 border-black font-bold uppercase rounded-none cursor-pointer hover:bg-red-500 hover:text-white transition-colors"
                           onClick={() => removeSkill(skill)}
                         >
                           {skill}
@@ -773,7 +783,7 @@ export default function Profile() {
                   )}
 
                   <div>
-                    <p className="text-sm text-muted-foreground mb-2">Suggested skills:</p>
+                    <p className="text-sm font-bold uppercase text-muted-foreground mb-2">Suggested modules:</p>
                     <div className="flex flex-wrap gap-2">
                       {SUGGESTED_SKILLS.filter((s) => !skills.includes(s))
                         .slice(0, 10)
@@ -781,7 +791,7 @@ export default function Profile() {
                           <Badge
                             key={skill}
                             variant="outline"
-                            className="cursor-pointer hover:bg-primary/10"
+                            className="cursor-pointer hover:bg-primary border-2 border-black/20 hover:border-black font-mono uppercase rounded-none transition-all"
                             onClick={() => addSuggestedSkill(skill)}
                           >
                             <Plus className="w-3 h-3 mr-1" />
@@ -797,13 +807,13 @@ export default function Profile() {
                     profile.skills.map((skill) => (
                       <Badge
                         key={skill}
-                        className="bg-primary/20 text-primary border border-primary/30"
+                        className="bg-black text-white border-2 border-black px-3 py-1 text-sm font-bold uppercase rounded-none"
                       >
                         {skill}
                       </Badge>
                     ))
                   ) : (
-                    <p className="text-muted-foreground">No skills added yet</p>
+                    <p className="text-muted-foreground italic font-mono">No skills initialized.</p>
                   )}
                 </div>
               )}
@@ -815,10 +825,10 @@ export default function Profile() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="glass-card p-8"
+            className="bg-card border-4 border-black dark:border-white p-8 shadow-neo mt-8"
           >
-            <h2 className="text-2xl font-heading font-bold mb-6 flex items-center gap-2">
-              <Trophy className="w-6 h-6 text-primary" />
+            <h2 className="text-2xl font-black uppercase mb-6 flex items-center gap-2">
+              <Trophy className="w-6 h-6" />
               Hackathon History
             </h2>
 
@@ -852,10 +862,10 @@ export default function Profile() {
                           entry.status === 'accepted'
                             ? 'bg-green-500/20 text-green-400 border border-green-500/30'
                             : entry.status === 'submitted'
-                            ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
-                            : entry.status === 'rejected'
-                            ? 'bg-red-500/20 text-red-400 border border-red-500/30'
-                            : 'status-draft'
+                              ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
+                              : entry.status === 'rejected'
+                                ? 'bg-red-500/20 text-red-400 border border-red-500/30'
+                                : 'status-draft'
                         }
                       >
                         {entry.status === 'accepted' && <CheckCircle2 className="w-3 h-3 mr-1" />}

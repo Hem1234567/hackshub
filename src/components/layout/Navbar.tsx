@@ -29,30 +29,31 @@ export function Navbar() {
     <motion.nav
       initial={{ y: -100 }}
       animate={{ y: 0 }}
-      className="fixed top-0 left-0 right-0 z-50 glass-card border-b border-border/50"
+      className="fixed top-0 left-0 right-0 z-50 bg-background border-b-4 border-black dark:border-white"
     >
       <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-16">
+        <div className="flex items-center justify-between h-20">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-gradient-primary flex items-center justify-center">
-              <span className="text-primary-foreground font-heading font-bold text-lg">H</span>
+            <div className="w-10 h-10 bg-primary flex items-center justify-center border-2 border-black dark:border-white shadow-neo-sm">
+              <span className="text-black font-black text-xl">H</span>
             </div>
-            <span className="font-heading font-bold text-xl gradient-text">Hackathon Hub</span>
+            <span className="font-heading font-black text-2xl tracking-tighter uppercase">Hackathon Hub</span>
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center gap-6">
-            <Link to="/hackathons" className="text-muted-foreground hover:text-foreground transition-colors">
+          <div className="hidden md:flex items-center gap-8">
+            <Link to="/hackathons" className="text-foreground hover:text-primary transition-colors font-bold uppercase tracking-tight">
               Browse Hackathons
             </Link>
+
             {user && (
               <>
-                <Link to="/dashboard" className="text-muted-foreground hover:text-foreground transition-colors">
+                <Link to="/dashboard" className="text-foreground hover:text-primary transition-colors font-bold uppercase tracking-tight">
                   Dashboard
                 </Link>
                 <Link to="/create-hackathon">
-                  <Button variant="outline" size="sm" className="border-primary/50 hover:bg-primary/10">
+                  <Button variant="outline" size="sm" className="border-2 hover:bg-primary hover:text-black">
                     <Plus className="w-4 h-4 mr-2" />
                     Organize
                   </Button>
@@ -62,38 +63,37 @@ export function Navbar() {
           </div>
 
           {/* Auth Section */}
-          <div className="hidden md:flex items-center gap-2">
+          <div className="hidden md:flex items-center gap-4">
             <ThemeToggle />
             {user ? (
               <>
                 <NotificationBell />
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="relative h-10 w-10 rounded-full">
-                      <Avatar className="h-10 w-10 border-2 border-primary/30">
+                    <Button variant="ghost" className="relative h-12 w-12 rounded-full p-0 border-2 border-black dark:border-white shadow-neo-sm hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all">
+                      <Avatar className="h-full w-full">
                         <AvatarImage src={profile?.avatar_url || undefined} alt={profile?.full_name || 'User'} />
-                        <AvatarFallback className="bg-primary/20 text-primary">
+                        <AvatarFallback className="bg-primary text-black font-bold text-lg rounded-full">
                           {profile?.full_name?.[0] || user.email?.[0]?.toUpperCase() || 'U'}
                         </AvatarFallback>
                       </Avatar>
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent className="w-56 glass-card border-border" align="end">
-                    <div className="px-2 py-1.5">
-                      <p className="text-sm font-medium">{profile?.full_name || 'User'}</p>
-                      <p className="text-xs text-muted-foreground">{user.email}</p>
+                  <DropdownMenuContent className="w-56 border-4 border-black dark:border-white shadow-neo p-2 rounded-none" align="end">
+                    <div className="px-2 py-1.5 border-b-2 border-black dark:border-white mb-2">
+                      <p className="text-sm font-bold uppercase">{profile?.full_name || 'User'}</p>
+                      <p className="text-xs text-muted-foreground font-mono">{user.email}</p>
                     </div>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={() => navigate('/dashboard')}>
+                    <DropdownMenuItem onClick={() => navigate('/dashboard')} className="font-bold uppercase focus:bg-primary focus:text-black">
                       <LayoutDashboard className="mr-2 h-4 w-4" />
                       Dashboard
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => navigate('/profile')}>
+                    <DropdownMenuItem onClick={() => navigate('/profile')} className="font-bold uppercase focus:bg-primary focus:text-black">
                       <User className="mr-2 h-4 w-4" />
                       Profile
                     </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={handleSignOut} className="text-destructive">
+                    <DropdownMenuSeparator className="bg-black dark:bg-white h-0.5" />
+                    <DropdownMenuItem onClick={handleSignOut} className="text-destructive font-bold uppercase focus:bg-destructive focus:text-white">
                       <LogOut className="mr-2 h-4 w-4" />
                       Sign out
                     </DropdownMenuItem>
@@ -101,12 +101,12 @@ export function Navbar() {
                 </DropdownMenu>
               </>
             ) : (
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-4">
                 <Link to="/auth">
-                  <Button variant="ghost">Sign In</Button>
+                  <Button variant="ghost" className="uppercase font-bold hover:bg-transparent hover:underline">Sign In</Button>
                 </Link>
                 <Link to="/auth?mode=signup">
-                  <Button className="bg-gradient-primary hover:opacity-90 text-primary-foreground">
+                  <Button className="uppercase font-bold shadow-neo border-2 border-black dark:border-white">
                     Get Started
                   </Button>
                 </Link>
@@ -137,8 +137,10 @@ export function Navbar() {
                 className="text-muted-foreground hover:text-foreground transition-colors"
                 onClick={() => setIsOpen(false)}
               >
+
                 Browse Hackathons
               </Link>
+
               {user ? (
                 <>
                   <Link

@@ -282,29 +282,29 @@ export default function CreateHackathon() {
 
   return (
     <Layout>
-      <div className="min-h-screen py-8">
+      <div className="min-h-screen py-12 bg-background">
         <div className="container mx-auto px-4 max-w-4xl">
           {/* Header */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mb-8"
+            className="mb-12"
           >
             <Button
               variant="ghost"
               onClick={() => navigate(-1)}
-              className="mb-4"
+              className="mb-8 hover:bg-transparent hover:underline p-0"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Back
+              BACK
             </Button>
-            <h1 className="text-3xl font-heading font-bold">
-              {isEditing ? 'Edit Hackathon' : 'Create a New Hackathon'}
+            <h1 className="text-5xl font-black uppercase mb-2">
+              {isEditing ? 'Edit Protocol' : 'Initialize Hackathon'}
             </h1>
-            <p className="text-muted-foreground mt-2">
+            <p className="text-xl font-mono text-muted-foreground border-l-4 border-primary pl-4">
               {isEditing
-                ? 'Update your hackathon details'
-                : 'Set up your hackathon in a few simple steps'}
+                ? 'Update system parameters'
+                : 'Configure new event sequence'}
             </p>
           </motion.div>
 
@@ -313,49 +313,42 @@ export default function CreateHackathon() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="mb-8"
+            className="mb-12"
           >
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between relative">
+              <div className="absolute left-0 top-1/2 w-full h-1 bg-muted -z-10" />
               {steps.map((step, index) => {
                 const StepIcon = step.icon;
                 const isActive = currentStep === step.id;
                 const isCompleted = currentStep > step.id;
 
                 return (
-                  <div key={step.id} className="flex items-center">
+                  <div key={step.id} className="relative bg-background px-2">
                     <button
                       onClick={() => setCurrentStep(step.id)}
                       className={cn(
-                        'flex items-center gap-2 px-4 py-2 rounded-lg transition-colors',
+                        'flex flex-col items-center gap-2 group',
                         isActive
-                          ? 'bg-primary/20 text-primary'
+                          ? 'text-black dark:text-white'
                           : isCompleted
-                          ? 'text-primary'
-                          : 'text-muted-foreground hover:text-foreground'
+                            ? 'text-primary'
+                            : 'text-muted-foreground'
                       )}
                     >
                       <div
                         className={cn(
-                          'w-8 h-8 rounded-full flex items-center justify-center',
+                          'w-12 h-12 border-4 flex items-center justify-center transition-all duration-200',
                           isActive
-                            ? 'bg-gradient-primary text-primary-foreground'
+                            ? 'bg-black text-white border-black dark:bg-white dark:text-black dark:border-white shadow-neo scale-110'
                             : isCompleted
-                            ? 'bg-primary/20'
-                            : 'bg-muted'
+                              ? 'bg-primary text-black border-black dark:border-white'
+                              : 'bg-white dark:bg-black border-muted-foreground'
                         )}
                       >
-                        <StepIcon className="w-4 h-4" />
+                        <StepIcon className="w-6 h-6" />
                       </div>
-                      <span className="hidden md:inline font-medium">{step.title}</span>
+                      <span className="hidden md:inline font-bold uppercase text-xs tracking-wider bg-background px-1">{step.title}</span>
                     </button>
-                    {index < steps.length - 1 && (
-                      <div
-                        className={cn(
-                          'w-8 md:w-16 h-0.5 mx-2',
-                          isCompleted ? 'bg-primary' : 'bg-border'
-                        )}
-                      />
-                    )}
                   </div>
                 );
               })}
@@ -369,52 +362,52 @@ export default function CreateHackathon() {
             transition={{ delay: 0.2 }}
             onSubmit={handleSubmit(onSubmit)}
           >
-            <div className="glass-card p-8">
+            <div className="bg-white dark:bg-black border-4 border-black dark:border-white p-8 shadow-neo">
               {/* Step 1: Basic Info */}
               {currentStep === 1 && (
-                <div className="space-y-6">
+                <div className="space-y-8">
                   <div className="space-y-2">
-                    <Label htmlFor="title">Hackathon Title *</Label>
+                    <Label htmlFor="title" className="text-lg font-black uppercase">Hackathon Title *</Label>
                     <Input
                       id="title"
-                      placeholder="e.g., AI Innovation Challenge 2024"
+                      placeholder="E.G., AI INNOVATION CHALLENGE 2024"
                       {...register('title')}
-                      className="bg-muted/50 border-border"
+                      className="bg-white dark:bg-black border-4 border-black dark:border-white rounded-none h-12 font-bold focus-visible:ring-0 focus-visible:shadow-neo transition-all"
                     />
                     {errors.title && (
-                      <p className="text-sm text-destructive">{errors.title.message}</p>
+                      <p className="text-sm text-destructive font-bold">{errors.title.message}</p>
                     )}
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="tagline">Tagline</Label>
+                    <Label htmlFor="tagline" className="text-lg font-black uppercase">Tagline</Label>
                     <Input
                       id="tagline"
-                      placeholder="A short, catchy description"
+                      placeholder="A SHORT, CATCHY DESCRIPTION"
                       {...register('tagline')}
-                      className="bg-muted/50 border-border"
+                      className="bg-white dark:bg-black border-4 border-black dark:border-white rounded-none h-12 font-bold focus-visible:ring-0 focus-visible:shadow-neo transition-all"
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="description">Description</Label>
+                    <Label htmlFor="description" className="text-lg font-black uppercase">Description</Label>
                     <Textarea
                       id="description"
-                      placeholder="Describe your hackathon, its goals, and what participants can expect..."
+                      placeholder="DESCRIBE YOUR HACKATHON, ITS GOALS, AND WHAT PARTICIPANTS CAN EXPECT..."
                       rows={6}
                       {...register('description')}
-                      className="bg-muted/50 border-border resize-none"
+                      className="bg-white dark:bg-black border-4 border-black dark:border-white rounded-none font-mono focus-visible:ring-0 focus-visible:shadow-neo transition-all resize-none"
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="rules">Rules & Guidelines</Label>
+                    <Label htmlFor="rules" className="text-lg font-black uppercase">Rules & Guidelines</Label>
                     <Textarea
                       id="rules"
-                      placeholder="Add any rules, eligibility criteria, or guidelines..."
+                      placeholder="ADD ANY RULES, ELIGIBILITY CRITERIA, OR GUIDELINES..."
                       rows={4}
                       {...register('rules')}
-                      className="bg-muted/50 border-border resize-none"
+                      className="bg-white dark:bg-black border-4 border-black dark:border-white rounded-none font-mono focus-visible:ring-0 focus-visible:shadow-neo transition-all resize-none"
                     />
                   </div>
 
@@ -424,36 +417,36 @@ export default function CreateHackathon() {
 
               {/* Step 2: Dates & Location */}
               {currentStep === 2 && (
-                <div className="space-y-6">
+                <div className="space-y-8">
                   <div className="space-y-2">
-                    <Label>Mode *</Label>
+                    <Label className="text-lg font-black uppercase">Mode *</Label>
                     <Select
                       value={mode}
                       onValueChange={(value: 'online' | 'offline' | 'hybrid') =>
                         setValue('mode', value)
                       }
                     >
-                      <SelectTrigger className="bg-muted/50 border-border">
+                      <SelectTrigger className="bg-white dark:bg-black border-4 border-black dark:border-white rounded-none h-12 font-bold focus:ring-0 focus:shadow-neo transition-all">
                         <SelectValue />
                       </SelectTrigger>
-                      <SelectContent className="glass-card border-border">
-                        <SelectItem value="online">Online</SelectItem>
-                        <SelectItem value="offline">In-Person</SelectItem>
-                        <SelectItem value="hybrid">Hybrid</SelectItem>
+                      <SelectContent className="bg-white dark:bg-black border-4 border-black dark:border-white rounded-none shadow-neo">
+                        <SelectItem value="online">ONLINE</SelectItem>
+                        <SelectItem value="offline">IN-PERSON</SelectItem>
+                        <SelectItem value="hybrid">HYBRID</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
 
                   {(mode === 'offline' || mode === 'hybrid') && (
                     <div className="space-y-2">
-                      <Label htmlFor="location">Location</Label>
+                      <Label htmlFor="location" className="text-lg font-black uppercase">Location</Label>
                       <div className="relative">
-                        <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                        <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-black dark:text-white" />
                         <Input
                           id="location"
                           placeholder="e.g., San Francisco, CA"
                           {...register('location')}
-                          className="pl-10 bg-muted/50 border-border"
+                          className="pl-10 bg-white dark:bg-black border-4 border-black dark:border-white rounded-none h-12 font-bold focus-visible:ring-0 focus-visible:shadow-neo transition-all"
                         />
                       </div>
                     </div>
@@ -461,21 +454,21 @@ export default function CreateHackathon() {
 
                   <div className="grid md:grid-cols-2 gap-6">
                     <div className="space-y-2">
-                      <Label>Start Date</Label>
+                      <Label className="text-lg font-black uppercase">Start Date</Label>
                       <Popover>
                         <PopoverTrigger asChild>
                           <Button
                             variant="outline"
                             className={cn(
-                              'w-full justify-start text-left font-normal bg-muted/50 border-border',
+                              'w-full justify-start text-left font-bold bg-white dark:bg-black border-4 border-black dark:border-white rounded-none h-12 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:hover:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)] transition-all',
                               !startDate && 'text-muted-foreground'
                             )}
                           >
-                            <Calendar className="mr-2 h-4 w-4" />
-                            {startDate ? format(startDate, 'PPP') : 'Pick a date'}
+                            <Calendar className="mr-2 h-5 w-5" />
+                            {startDate ? format(startDate, 'PPP') : 'PICK A DATE'}
                           </Button>
                         </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0 glass-card border-border" align="start">
+                        <PopoverContent className="w-auto p-0 bg-white dark:bg-black border-4 border-black dark:border-white rounded-none shadow-neo" align="start">
                           <CalendarComponent
                             mode="single"
                             selected={startDate}
@@ -488,21 +481,21 @@ export default function CreateHackathon() {
                     </div>
 
                     <div className="space-y-2">
-                      <Label>End Date</Label>
+                      <Label className="text-lg font-black uppercase">End Date</Label>
                       <Popover>
                         <PopoverTrigger asChild>
                           <Button
                             variant="outline"
                             className={cn(
-                              'w-full justify-start text-left font-normal bg-muted/50 border-border',
+                              'w-full justify-start text-left font-bold bg-white dark:bg-black border-4 border-black dark:border-white rounded-none h-12 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:hover:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)] transition-all',
                               !endDate && 'text-muted-foreground'
                             )}
                           >
-                            <Calendar className="mr-2 h-4 w-4" />
-                            {endDate ? format(endDate, 'PPP') : 'Pick a date'}
+                            <Calendar className="mr-2 h-5 w-5" />
+                            {endDate ? format(endDate, 'PPP') : 'PICK A DATE'}
                           </Button>
                         </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0 glass-card border-border" align="start">
+                        <PopoverContent className="w-auto p-0 bg-white dark:bg-black border-4 border-black dark:border-white rounded-none shadow-neo" align="start">
                           <CalendarComponent
                             mode="single"
                             selected={endDate}
@@ -516,23 +509,23 @@ export default function CreateHackathon() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label>Application Deadline</Label>
+                    <Label className="text-lg font-black uppercase">Application Deadline</Label>
                     <Popover>
                       <PopoverTrigger asChild>
                         <Button
                           variant="outline"
                           className={cn(
-                            'w-full justify-start text-left font-normal bg-muted/50 border-border',
+                            'w-full justify-start text-left font-bold bg-white dark:bg-black border-4 border-black dark:border-white rounded-none h-12 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:hover:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)] transition-all',
                             !applicationDeadline && 'text-muted-foreground'
                           )}
                         >
-                          <Calendar className="mr-2 h-4 w-4" />
+                          <Calendar className="mr-2 h-5 w-5" />
                           {applicationDeadline
                             ? format(applicationDeadline, 'PPP')
-                            : 'Pick a date'}
+                            : 'PICK A DATE'}
                         </Button>
                       </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0 glass-card border-border" align="start">
+                      <PopoverContent className="w-auto p-0 bg-white dark:bg-black border-4 border-black dark:border-white rounded-none shadow-neo" align="start">
                         <CalendarComponent
                           mode="single"
                           selected={applicationDeadline}
@@ -548,41 +541,41 @@ export default function CreateHackathon() {
 
               {/* Step 3: Team Settings */}
               {currentStep === 3 && (
-                <div className="space-y-6">
-                  <div className="grid md:grid-cols-2 gap-6">
+                <div className="space-y-8">
+                  <div className="grid md:grid-cols-2 gap-8">
                     <div className="space-y-2">
-                      <Label htmlFor="min_team_size">Minimum Team Size</Label>
+                      <Label htmlFor="min_team_size" className="text-lg font-black uppercase">Minimum Team Size</Label>
                       <Input
                         id="min_team_size"
                         type="number"
                         min={1}
                         max={10}
                         {...register('min_team_size', { valueAsNumber: true })}
-                        className="bg-muted/50 border-border"
+                        className="bg-white dark:bg-black border-4 border-black dark:border-white rounded-none h-12 font-bold focus-visible:ring-0 focus-visible:shadow-neo transition-all"
                       />
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="max_team_size">Maximum Team Size</Label>
+                      <Label htmlFor="max_team_size" className="text-lg font-black uppercase">Maximum Team Size</Label>
                       <Input
                         id="max_team_size"
                         type="number"
                         min={1}
                         max={10}
                         {...register('max_team_size', { valueAsNumber: true })}
-                        className="bg-muted/50 border-border"
+                        className="bg-white dark:bg-black border-4 border-black dark:border-white rounded-none h-12 font-bold focus-visible:ring-0 focus-visible:shadow-neo transition-all"
                       />
                     </div>
                   </div>
 
-                  <div className="glass-card p-6 bg-muted/30">
+                  <div className="bg-primary/20 border-4 border-black p-6">
                     <div className="flex items-center gap-3 mb-2">
-                      <Users className="w-5 h-5 text-primary" />
-                      <span className="font-medium">Team Settings Preview</span>
+                      <Users className="w-6 h-6 text-black" />
+                      <span className="font-black uppercase">Configuration Preview</span>
                     </div>
-                    <p className="text-muted-foreground">
-                      Teams can have between {watch('min_team_size')} and {watch('max_team_size')}{' '}
-                      members
+                    <p className="font-mono font-bold">
+                      UNITS SHALL CONSIST OF {watch('min_team_size')} TO {watch('max_team_size')}{' '}
+                      OPERATIVES.
                     </p>
                   </div>
                 </div>
@@ -590,56 +583,59 @@ export default function CreateHackathon() {
 
               {/* Step 4: Prizes */}
               {currentStep === 4 && (
-                <div className="space-y-6">
+                <div className="space-y-8">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h3 className="text-lg font-heading font-semibold">Prize Pool</h3>
-                      <p className="text-sm text-muted-foreground">
-                        Add prizes to motivate participants
+                      <h3 className="text-2xl font-black uppercase">Bounty List</h3>
+                      <p className="text-sm font-mono text-muted-foreground">
+                        DEFINE REWARDS TO INCENTIVIZE OPERATIVES
                       </p>
                     </div>
-                    <Button type="button" variant="outline" onClick={addPrize}>
+                    <Button type="button" variant="outline" onClick={addPrize} className="border-4 border-black shadow-neo hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none hover:bg-primary font-bold">
                       <Plus className="w-4 h-4 mr-2" />
-                      Add Prize
+                      ADD BOUNTY
                     </Button>
                   </div>
 
-                  <div className="space-y-4">
+                  <div className="space-y-6">
                     {prizes.map((prize, index) => (
-                      <div key={index} className="glass-card p-6 bg-muted/30">
-                        <div className="flex items-start justify-between mb-4">
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-full bg-gradient-primary flex items-center justify-center">
-                              <Trophy className="w-5 h-5 text-primary-foreground" />
-                            </div>
-                            <span className="font-medium">Position #{index + 1}</span>
-                          </div>
+                      <div key={index} className="bg-white dark:bg-black border-4 border-black dark:border-white p-6 relative">
+                        <div className="absolute top-4 right-4">
                           {prizes.length > 1 && (
                             <Button
                               type="button"
                               variant="ghost"
                               size="sm"
                               onClick={() => removePrize(index)}
-                              className="text-destructive hover:text-destructive"
+                              className="text-destructive hover:text-destructive hover:bg-destructive/10"
                             >
-                              <Trash2 className="w-4 h-4" />
+                              <Trash2 className="w-5 h-5" />
                             </Button>
                           )}
                         </div>
 
-                        <div className="grid md:grid-cols-2 gap-4">
+                        <div className="flex items-start gap-4 mb-6">
+                          <div className="w-12 h-12 border-4 border-black bg-primary flex items-center justify-center font-black text-xl shadow-sm">
+                            #{index + 1}
+                          </div>
+                          <div className="pt-2">
+                            <span className="font-black uppercase text-lg">Position #{index + 1}</span>
+                          </div>
+                        </div>
+
+                        <div className="grid md:grid-cols-2 gap-6">
                           <div className="space-y-2">
-                            <Label>Title</Label>
+                            <Label className="font-bold uppercase">Title</Label>
                             <Input
                               value={prize.title}
                               onChange={(e) => updatePrize(index, 'title', e.target.value)}
                               placeholder="e.g., 1st Place"
-                              className="bg-muted/50 border-border"
+                              className="bg-muted/30 border-4 border-black rounded-none focus-visible:ring-0 transition-all font-bold"
                             />
                           </div>
 
                           <div className="space-y-2">
-                            <Label>Amount ($)</Label>
+                            <Label className="font-bold uppercase">Amount ($)</Label>
                             <Input
                               type="number"
                               value={prize.amount}
@@ -647,28 +643,28 @@ export default function CreateHackathon() {
                                 updatePrize(index, 'amount', parseInt(e.target.value) || 0)
                               }
                               placeholder="1000"
-                              className="bg-muted/50 border-border"
+                              className="bg-muted/30 border-4 border-black rounded-none focus-visible:ring-0 transition-all font-bold"
                             />
                           </div>
                         </div>
 
                         <div className="mt-4 space-y-2">
-                          <Label>Description</Label>
+                          <Label className="font-bold uppercase">Description</Label>
                           <Input
                             value={prize.description}
                             onChange={(e) => updatePrize(index, 'description', e.target.value)}
                             placeholder="Prize description..."
-                            className="bg-muted/50 border-border"
+                            className="bg-muted/30 border-4 border-black rounded-none focus-visible:ring-0 transition-all font-bold"
                           />
                         </div>
                       </div>
                     ))}
                   </div>
 
-                  <div className="glass-card p-6 bg-muted/30">
+                  <div className="bg-black text-white border-4 border-white p-6 shadow-neo">
                     <div className="flex items-center justify-between">
-                      <span className="text-lg font-heading font-semibold">Total Prize Pool</span>
-                      <span className="text-2xl font-heading font-bold gradient-text">
+                      <span className="text-xl font-black uppercase">Total Bounty Pool</span>
+                      <span className="text-3xl font-black text-primary">
                         ${prizes.reduce((sum, p) => sum + p.amount, 0).toLocaleString()}
                       </span>
                     </div>
@@ -677,19 +673,24 @@ export default function CreateHackathon() {
               )}
 
               {/* Navigation */}
-              <div className="flex items-center justify-between mt-8 pt-6 border-t border-border">
+              <div className="flex items-center justify-between mt-12 pt-8 border-t-4 border-black dark:border-white">
                 <Button
                   type="button"
                   variant="outline"
                   onClick={prevStep}
                   disabled={currentStep === 1}
+                  className="border-4 border-black dark:border-white shadow-neo hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none bg-white dark:bg-black text-black dark:text-white font-black uppercase px-8 h-12"
                 >
                   <ArrowLeft className="w-4 h-4 mr-2" />
                   Previous
                 </Button>
 
                 {currentStep < steps.length ? (
-                  <Button type="button" onClick={nextStep}>
+                  <Button
+                    type="button"
+                    onClick={nextStep}
+                    className="bg-black text-white hover:bg-black/90 border-4 border-black shadow-neo hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none font-black uppercase px-8 h-12"
+                  >
                     Next
                     <ArrowRight className="w-4 h-4 ml-2" />
                   </Button>
@@ -697,17 +698,17 @@ export default function CreateHackathon() {
                   <Button
                     type="submit"
                     disabled={saveMutation.isPending}
-                    className="bg-gradient-primary hover:opacity-90 text-primary-foreground"
+                    className="bg-primary text-black hover:bg-primary/90 border-4 border-black shadow-neo hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none font-black uppercase px-8 h-12"
                   >
                     {saveMutation.isPending ? (
                       <>
                         <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        Saving...
+                        PROCESSING...
                       </>
                     ) : isEditing ? (
-                      'Update Hackathon'
+                      'UPDATE SYSTEM'
                     ) : (
-                      'Create Hackathon'
+                      'INITIATE HACKATHON'
                     )}
                   </Button>
                 )}

@@ -170,15 +170,15 @@ export default function HackathonDetail() {
   const isTeamMemberApproved = userTeamMembership?.accepted && userTeamMembership?.join_status === 'accepted';
   const teamId = userApplication?.team?.id || userTeamMembership?.team?.id;
   const isGalleryPublic = hackathon.is_gallery_public;
-  
+
   // User is considered "participating" if they have an application or an approved team membership
   const isParticipating = hasApplied || hasTeamMembership;
 
   return (
     <Layout>
-      <div className="min-h-screen">
+      <div className="min-h-screen bg-background pb-12">
         {/* Hero Banner */}
-        <section className="relative h-64 md:h-80 overflow-hidden">
+        <section className="relative h-64 md:h-80 overflow-hidden border-b-4 border-black dark:border-white">
           {hackathon.banner_url ? (
             <img
               src={hackathon.banner_url}
@@ -186,102 +186,107 @@ export default function HackathonDetail() {
               className="w-full h-full object-cover"
             />
           ) : (
-            <div className="w-full h-full bg-gradient-hero" />
-          )}
-          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent" />
-          
-          <div className="absolute bottom-0 left-0 right-0 p-8">
-            <div className="container mx-auto">
-              <div className="flex items-center gap-3 mb-4">
-                <Badge
-                  className={
-                    hackathon.status === 'live'
-                      ? 'status-live'
-                      : hackathon.status === 'draft'
-                      ? 'status-draft'
-                      : 'status-ended'
-                  }
-                >
-                  {hackathon.status === 'live' ? 'Live' : hackathon.status === 'draft' ? 'Coming Soon' : 'Ended'}
-                </Badge>
-                <Badge
-                  className={
-                    hackathon.mode === 'online'
-                      ? 'mode-online'
-                      : hackathon.mode === 'offline'
-                      ? 'mode-offline'
-                      : 'mode-hybrid'
-                  }
-                >
-                  <ModeIcon className="w-3 h-3 mr-1" />
-                  {modeLabels[hackathon.mode as keyof typeof modeLabels]}
-                </Badge>
+            <div className="w-full h-full bg-primary flex items-center justify-center">
+              <div className="text-9xl font-black text-black opacity-20 transform -rotate-12 select-none">
+                HACK
               </div>
-              <h1 className="text-4xl md:text-5xl font-heading font-bold mb-2">{hackathon.title}</h1>
+            </div>
+          )}
+
+          <div className="absolute top-0 right-0 p-4 flex gap-2">
+            <Badge
+              className={`border-4 border-black font-bold uppercase rounded-none shadow-neo ${hackathon.status === 'live'
+                  ? 'bg-green-400 text-black'
+                  : hackathon.status === 'draft'
+                    ? 'bg-yellow-400 text-black'
+                    : 'bg-red-400 text-black'
+                }`}
+            >
+              {hackathon.status === 'live' ? 'Live System' : hackathon.status === 'draft' ? 'Initializing' : 'Terminated'}
+            </Badge>
+            <Badge
+              className={`border-4 border-black font-bold uppercase rounded-none shadow-neo ${hackathon.mode === 'online'
+                  ? 'bg-blue-400 text-black'
+                  : hackathon.mode === 'offline'
+                    ? 'bg-purple-400 text-black'
+                    : 'bg-orange-400 text-black'
+                }`}
+            >
+              <ModeIcon className="w-4 h-4 mr-1" />
+              {modeLabels[hackathon.mode as keyof typeof modeLabels]}
+            </Badge>
+          </div>
+
+          <div className="absolute bottom-0 left-0 right-0 p-8 bg-gradient-to-t from-black/80 to-transparent">
+            <div className="container mx-auto">
+              <h1 className="text-5xl md:text-7xl font-black text-white uppercase mb-2 tracking-tighter drop-shadow-md">
+                {hackathon.title}
+              </h1>
               {hackathon.tagline && (
-                <p className="text-xl text-muted-foreground">{hackathon.tagline}</p>
+                <p className="text-xl md:text-2xl text-white font-mono font-bold bg-black/50 inline-block px-2 border-l-4 border-primary">
+                  {hackathon.tagline}
+                </p>
               )}
             </div>
           </div>
         </section>
 
         {/* Quick Info Bar */}
-        <section className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-16 z-30">
+        <section className="border-b-4 border-black dark:border-white bg-white dark:bg-black sticky top-16 z-30 shadow-md">
           <div className="container mx-auto px-4">
-            <div className="flex flex-wrap items-center justify-between py-4 gap-4">
-              <div className="flex flex-wrap items-center gap-6 text-sm">
+            <div className="flex flex-wrap items-center justify-between py-4 gap-6">
+              <div className="flex flex-wrap items-center gap-6 text-sm font-bold uppercase">
                 {hackathon.start_date && (
-                  <span className="flex items-center gap-2">
-                    <Calendar className="w-4 h-4 text-primary" />
+                  <span className="flex items-center gap-2 bg-muted/30 px-3 py-1 border-2 border-transparent hover:border-black transition-colors">
+                    <Calendar className="w-5 h-5" />
                     {format(new Date(hackathon.start_date), 'MMM d')}
                     {hackathon.end_date && ` - ${format(new Date(hackathon.end_date), 'MMM d, yyyy')}`}
                   </span>
                 )}
                 {hackathon.location && hackathon.mode !== 'online' && (
-                  <span className="flex items-center gap-2">
-                    <MapPin className="w-4 h-4 text-primary" />
+                  <span className="flex items-center gap-2 bg-muted/30 px-3 py-1 border-2 border-transparent hover:border-black transition-colors">
+                    <MapPin className="w-5 h-5" />
                     {hackathon.location}
                   </span>
                 )}
-                <span className="flex items-center gap-2">
-                  <Users className="w-4 h-4 text-primary" />
+                <span className="flex items-center gap-2 bg-muted/30 px-3 py-1 border-2 border-transparent hover:border-black transition-colors">
+                  <Users className="w-5 h-5" />
                   Team size: {hackathon.min_team_size}-{hackathon.max_team_size}
                 </span>
                 {hackathon.application_deadline && (
-                  <span className="flex items-center gap-2">
-                    <Clock className="w-4 h-4 text-primary" />
+                  <span className="flex items-center gap-2 bg-muted/30 px-3 py-1 border-2 border-transparent hover:border-black transition-colors text-destructive">
+                    <Clock className="w-5 h-5" />
                     Apply by {format(new Date(hackathon.application_deadline), 'MMM d, yyyy')}
                   </span>
                 )}
               </div>
-              
+
               {user ? (
                 hasApplied ? (
-                  <Badge className="bg-green-500/20 text-green-400 border border-green-500/30">
-                    Applied - {userApplication.status}
+                  <Badge className="bg-green-400 text-black border-4 border-black font-black uppercase text-lg px-6 py-2 rounded-none shadow-neo">
+                    Protocol Initiated: {userApplication.status}
                   </Badge>
                 ) : hasTeamMembership ? (
-                  <Badge className={
-                    isTeamMemberApproved 
-                      ? "bg-green-500/20 text-green-400 border border-green-500/30"
-                      : "bg-yellow-500/20 text-yellow-400 border border-yellow-500/30"
-                  }>
-                    {isTeamMemberApproved ? 'Team Member' : 'Pending Approval'}
+                  <Badge className={`border-4 border-black font-black uppercase text-lg px-6 py-2 rounded-none shadow-neo ${isTeamMemberApproved
+                      ? "bg-green-400 text-black"
+                      : "bg-yellow-400 text-black"
+                    }`}>
+                    {isTeamMemberApproved ? 'Unit Assigned' : 'Awaiting Clearance'}
                   </Badge>
                 ) : isDeadlinePassed ? (
-                  <Badge variant="secondary">Applications Closed</Badge>
+                  <Badge variant="destructive" className="border-4 border-black font-black uppercase text-lg px-6 py-2 rounded-none shadow-neo">Applications Locked</Badge>
                 ) : (
                   <Button
                     onClick={() => setActiveTab('apply')}
-                    className="bg-gradient-primary hover:opacity-90 text-primary-foreground"
+                    className="bg-primary text-black hover:bg-primary/90 border-4 border-black shadow-neo hover:shadow-none hover:translate-x-[4px] hover:translate-y-[4px] uppercase font-black text-lg px-8 py-6"
                   >
-                    Apply Now
+                    Initialize Application
                   </Button>
                 )
               ) : (
                 <Link to="/auth">
-                  <Button className="bg-gradient-primary hover:opacity-90 text-primary-foreground">
-                    Sign in to Apply
+                  <Button className="bg-black text-white hover:bg-black/90 border-4 border-black shadow-neo hover:shadow-none hover:translate-x-[4px] hover:translate-y-[4px] uppercase font-black px-8 py-6">
+                    Sign In to hack
                   </Button>
                 </Link>
               )}
@@ -290,71 +295,71 @@ export default function HackathonDetail() {
         </section>
 
         {/* Main Content */}
-        <section className="py-8">
+        <section className="py-12 bg-muted/20">
           <div className="container mx-auto px-4">
-            <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="bg-muted/50 mb-8 flex-wrap">
-                <TabsTrigger value="overview">Overview</TabsTrigger>
-                <TabsTrigger value="prizes">Prizes</TabsTrigger>
-                <TabsTrigger value="participants">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
+              <TabsList className="bg-white dark:bg-black border-4 border-black p-2 h-auto flex-wrap justify-start gap-2 rounded-none shadow-neo">
+                <TabsTrigger value="overview" className="border-2 border-transparent data-[state=active]:border-black data-[state=active]:bg-primary data-[state=active]:text-black font-bold uppercase rounded-none transition-all">Overview</TabsTrigger>
+                <TabsTrigger value="prizes" className="border-2 border-transparent data-[state=active]:border-black data-[state=active]:bg-primary data-[state=active]:text-black font-bold uppercase rounded-none transition-all">Prizes</TabsTrigger>
+                <TabsTrigger value="participants" className="border-2 border-transparent data-[state=active]:border-black data-[state=active]:bg-primary data-[state=active]:text-black font-bold uppercase rounded-none transition-all">
                   <Users className="w-4 h-4 mr-2" />
-                  Participants
+                  Hackers
                 </TabsTrigger>
                 {isGalleryPublic && (
-                  <TabsTrigger value="gallery">
+                  <TabsTrigger value="gallery" className="border-2 border-transparent data-[state=active]:border-black data-[state=active]:bg-primary data-[state=active]:text-black font-bold uppercase rounded-none transition-all">
                     <Image className="w-4 h-4 mr-2" />
                     Gallery
                   </TabsTrigger>
                 )}
                 {user && !isParticipating && !isDeadlinePassed && (
-                  <TabsTrigger value="apply">Apply</TabsTrigger>
+                  <TabsTrigger value="apply" className="border-2 border-transparent data-[state=active]:border-black data-[state=active]:bg-primary data-[state=active]:text-black font-bold uppercase rounded-none transition-all">Apply</TabsTrigger>
                 )}
                 {user && isParticipating && (
-                  <TabsTrigger value="apply">
-                    {hasTeamMembership && !hasApplied ? 'My Status' : 'My Team'}
+                  <TabsTrigger value="apply" className="border-2 border-transparent data-[state=active]:border-black data-[state=active]:bg-primary data-[state=active]:text-black font-bold uppercase rounded-none transition-all">
+                    {hasTeamMembership && !hasApplied ? 'Status' : 'My Unit'}
                   </TabsTrigger>
                 )}
                 {user && hasApplied && (
-                  <TabsTrigger value="team">My Team</TabsTrigger>
+                  <TabsTrigger value="team" className="border-2 border-transparent data-[state=active]:border-black data-[state=active]:bg-primary data-[state=active]:text-black font-bold uppercase rounded-none transition-all">My Unit</TabsTrigger>
                 )}
                 {teamId && isTeamMemberApproved && (
-                  <TabsTrigger value="chat">
+                  <TabsTrigger value="chat" className="border-2 border-transparent data-[state=active]:border-black data-[state=active]:bg-primary data-[state=active]:text-black font-bold uppercase rounded-none transition-all">
                     <MessageCircle className="w-4 h-4 mr-2" />
-                    Team Chat
+                    Comms
                   </TabsTrigger>
                 )}
                 {user && isJudge && (
-                  <TabsTrigger value="judging">
+                  <TabsTrigger value="judging" className="border-2 border-transparent data-[state=active]:border-black data-[state=active]:bg-primary data-[state=active]:text-black font-bold uppercase rounded-none transition-all">
                     <Star className="w-4 h-4 mr-2" />
-                    Judging
+                    Judge
                   </TabsTrigger>
                 )}
               </TabsList>
 
               <div className="grid lg:grid-cols-3 gap-8">
-                <div className="lg:col-span-2">
+                <div className="lg:col-span-2 space-y-8">
                   <TabsContent value="overview" className="mt-0">
                     <motion.div
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
-                      className="glass-card p-8"
+                      className="bg-white dark:bg-black border-4 border-black dark:border-white p-8 shadow-neo"
                     >
-                      <h2 className="text-2xl font-heading font-bold mb-4">About this Hackathon</h2>
+                      <h2 className="text-3xl font-black uppercase mb-6 border-b-4 border-black inline-block">Mission Brief</h2>
                       {hackathon.description ? (
-                        <div className="prose prose-invert max-w-none">
-                          <p className="text-muted-foreground whitespace-pre-wrap">{hackathon.description}</p>
+                        <div className="prose prose-neutral dark:prose-invert max-w-none font-mono">
+                          <p className="whitespace-pre-wrap">{hackathon.description}</p>
                         </div>
                       ) : (
-                        <p className="text-muted-foreground">No description provided.</p>
+                        <p className="text-muted-foreground font-mono">No intelligence available.</p>
                       )}
 
                       {hackathon.rules && (
                         <>
-                          <h3 className="text-xl font-heading font-semibold mt-8 mb-4 flex items-center gap-2">
-                            <FileText className="w-5 h-5 text-primary" />
-                            Rules & Guidelines
+                          <h3 className="text-2xl font-black uppercase mt-12 mb-6 flex items-center gap-2 border-b-4 border-black inline-block">
+                            <FileText className="w-6 h-6" />
+                            Directives & Protocols
                           </h3>
-                          <p className="text-muted-foreground whitespace-pre-wrap">{hackathon.rules}</p>
+                          <p className="whitespace-pre-wrap font-mono">{hackathon.rules}</p>
                         </>
                       )}
                     </motion.div>
@@ -364,66 +369,57 @@ export default function HackathonDetail() {
                     <motion.div
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
-                      className="glass-card p-8"
+                      className="bg-white dark:bg-black border-4 border-black dark:border-white p-8 shadow-neo"
                     >
-                      <h2 className="text-2xl font-heading font-bold mb-6 flex items-center gap-2">
-                        <Trophy className="w-6 h-6 text-primary" />
-                        Prize Pool
+                      <h2 className="text-3xl font-black uppercase mb-8 flex items-center gap-3">
+                        <Trophy className="w-8 h-8" />
+                        Bounties
                       </h2>
-                      
+
                       {prizes && prizes.length > 0 ? (
-                        <div className="space-y-4">
+                        <div className="space-y-6">
                           {prizes.map((prize, index) => (
                             <div
                               key={prize.id}
-                              className={`p-6 rounded-xl border ${
-                                index === 0
-                                  ? 'bg-gradient-to-r from-yellow-500/10 to-orange-500/10 border-yellow-500/30'
+                              className={`p-6 border-4 border-black dark:border-white ${index === 0
+                                  ? 'bg-yellow-400 shadow-neo'
                                   : index === 1
-                                  ? 'bg-gradient-to-r from-gray-400/10 to-gray-300/10 border-gray-400/30'
-                                  : index === 2
-                                  ? 'bg-gradient-to-r from-amber-700/10 to-amber-600/10 border-amber-700/30'
-                                  : 'bg-muted/30 border-border'
-                              }`}
+                                    ? 'bg-gray-300 shadow-neo-sm'
+                                    : index === 2
+                                      ? 'bg-orange-400 shadow-neo-sm'
+                                      : 'bg-white dark:bg-black'
+                                }`}
                             >
-                              <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-4">
-                                  <div className={`w-12 h-12 rounded-full flex items-center justify-center font-heading font-bold text-lg ${
-                                    index === 0
-                                      ? 'bg-yellow-500/20 text-yellow-400'
-                                      : index === 1
-                                      ? 'bg-gray-400/20 text-gray-300'
-                                      : index === 2
-                                      ? 'bg-amber-700/20 text-amber-500'
-                                      : 'bg-muted text-muted-foreground'
-                                  }`}>
+                              <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                                <div className="flex items-center gap-6">
+                                  <div className="w-16 h-16 border-4 border-black bg-white flex items-center justify-center font-black text-2xl shadow-sm">
                                     #{prize.position}
                                   </div>
                                   <div>
-                                    <h3 className="font-semibold">{prize.title}</h3>
+                                    <h3 className="text-xl font-black uppercase text-black">{prize.title}</h3>
                                     {prize.description && (
-                                      <p className="text-sm text-muted-foreground">{prize.description}</p>
+                                      <p className="text-sm font-mono font-bold text-black/80">{prize.description}</p>
                                     )}
                                   </div>
                                 </div>
-                                <span className="text-2xl font-heading font-bold gradient-text">
+                                <span className="text-4xl font-black bg-black text-white px-4 py-2 transform -rotate-2">
                                   ${prize.amount?.toLocaleString()}
                                 </span>
                               </div>
                             </div>
                           ))}
-                          
-                          <div className="mt-6 p-6 rounded-xl bg-gradient-primary/10 border border-primary/30">
+
+                          <div className="mt-8 p-6 bg-black text-white border-4 border-white shadow-neo">
                             <div className="flex items-center justify-between">
-                              <span className="text-lg font-semibold">Total Prize Pool</span>
-                              <span className="text-3xl font-heading font-bold gradient-text">
+                              <span className="text-xl font-black uppercase">Total Bounty Pool</span>
+                              <span className="text-4xl font-black text-primary">
                                 ${prizes.reduce((sum, p) => sum + (p.amount || 0), 0).toLocaleString()}
                               </span>
                             </div>
                           </div>
                         </div>
                       ) : (
-                        <p className="text-muted-foreground">No prizes announced yet.</p>
+                        <p className="text-muted-foreground font-mono">No bounties posted yet.</p>
                       )}
                     </motion.div>
                   </TabsContent>
@@ -432,13 +428,13 @@ export default function HackathonDetail() {
                     <motion.div
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
-                      className="glass-card p-8"
+                      className="bg-white dark:bg-black border-4 border-black dark:border-white p-8 shadow-neo"
                     >
-                      <h2 className="text-2xl font-heading font-bold mb-6 flex items-center gap-2">
-                        <Users className="w-6 h-6 text-primary" />
-                        Participants
+                      <h2 className="text-3xl font-black uppercase mb-6 flex items-center gap-3">
+                        <Users className="w-8 h-8" />
+                        Active Operatives
                       </h2>
-                      <p className="text-muted-foreground mb-6">
+                      <p className="text-muted-foreground font-mono mb-8 border-l-4 border-primary pl-4">
                         Meet the hackers participating in this event. Click on a participant to view their public profile.
                       </p>
                       <ParticipantsList hackathonId={id!} />
@@ -458,19 +454,19 @@ export default function HackathonDetail() {
                         animate={{ opacity: 1, y: 0 }}
                         className="space-y-8"
                       >
-                        <div className="glass-card p-8">
-                          <h2 className="text-2xl font-heading font-bold mb-6 flex items-center gap-2">
-                            <Image className="w-6 h-6 text-primary" />
-                            Project Gallery
+                        <div className="bg-white dark:bg-black border-4 border-black dark:border-white p-8 shadow-neo">
+                          <h2 className="text-3xl font-black uppercase mb-6 flex items-center gap-3">
+                            <Image className="w-8 h-8" />
+                            Project Artifacts
                           </h2>
-                          
+
                           {/* Show submission form for accepted participants */}
                           {user && isAccepted && (
-                            <div className="mb-8">
+                            <div className="mb-8 border-b-4 border-black pb-8">
                               <ProjectSubmissionForm hackathonId={id!} teamId={teamId} />
                             </div>
                           )}
-                          
+
                           {/* Show all submitted projects */}
                           <ProjectGallerySection hackathonId={id!} />
                         </div>
@@ -484,9 +480,9 @@ export default function HackathonDetail() {
 
                   <TabsContent value="team" className="mt-0">
                     {userApplication?.team && (
-                      <TeamSection 
-                        teamId={userApplication.team.id} 
-                        hackathon={hackathon} 
+                      <TeamSection
+                        teamId={userApplication.team.id}
+                        hackathon={hackathon}
                         hackathonId={id!}
                       />
                     )}
@@ -510,40 +506,35 @@ export default function HackathonDetail() {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.1 }}
-                    className="glass-card p-6"
+                    className="bg-white dark:bg-black border-4 border-black dark:border-white p-6 shadow-neo"
                   >
-                    <h3 className="font-heading font-semibold mb-4">Quick Info</h3>
-                    <div className="space-y-4">
+                    <h3 className="text-xl font-black uppercase mb-4 border-b-4 border-black pb-2">Parametric Data</h3>
+                    <div className="space-y-4 font-mono text-sm">
                       <div className="flex items-center justify-between">
-                        <span className="text-muted-foreground">Mode</span>
-                        <Badge className={
-                          hackathon.mode === 'online'
-                            ? 'mode-online'
-                            : hackathon.mode === 'offline'
-                            ? 'mode-offline'
-                            : 'mode-hybrid'
-                        }>
+                        <span className="font-bold">Mode</span>
+                        <Badge className={`border-2 border-black rounded-none uppercase font-bold ${hackathon.mode === 'online' ? 'bg-blue-400 text-black' : 'bg-purple-400 text-black'
+                          }`}>
                           {modeLabels[hackathon.mode as keyof typeof modeLabels]}
                         </Badge>
                       </div>
                       <div className="flex items-center justify-between">
-                        <span className="text-muted-foreground">Team Size</span>
-                        <span>{hackathon.min_team_size} - {hackathon.max_team_size} members</span>
+                        <span className="font-bold">Unit Capacity</span>
+                        <span className="bg-muted px-2 py-1 font-bold border-2 border-black">{hackathon.min_team_size} - {hackathon.max_team_size}</span>
                       </div>
                       {hackathon.start_date && (
                         <div className="flex items-center justify-between">
-                          <span className="text-muted-foreground">Duration</span>
-                          <span>
+                          <span className="font-bold">Duration</span>
+                          <span className="bg-muted px-2 py-1 font-bold border-2 border-black">
                             {hackathon.end_date
-                              ? `${Math.ceil((new Date(hackathon.end_date).getTime() - new Date(hackathon.start_date).getTime()) / (1000 * 60 * 60 * 24))} days`
+                              ? `${Math.ceil((new Date(hackathon.end_date).getTime() - new Date(hackathon.start_date).getTime()) / (1000 * 60 * 60 * 24))} DAYS`
                               : 'TBD'}
                           </span>
                         </div>
                       )}
                       {prizes && prizes.length > 0 && (
-                        <div className="flex items-center justify-between">
-                          <span className="text-muted-foreground">Total Prizes</span>
-                          <span className="font-semibold text-primary">
+                        <div className="flex items-center justify-between mt-4 border-t-2 border-black pt-4">
+                          <span className="font-black uppercase">Total Bounty</span>
+                          <span className="font-black text-xl text-primary bg-black px-2 transform -rotate-2">
                             ${prizes.reduce((sum, p) => sum + (p.amount || 0), 0).toLocaleString()}
                           </span>
                         </div>
@@ -558,9 +549,9 @@ export default function HackathonDetail() {
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.2 }}
                     >
-                      <DeadlineCountdown 
-                        deadline={hackathon.application_deadline} 
-                        label="Applications close in"
+                      <DeadlineCountdown
+                        deadline={hackathon.application_deadline}
+                        label="TIME REMAINING"
                       />
                     </motion.div>
                   )}
@@ -570,40 +561,40 @@ export default function HackathonDetail() {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.3 }}
-                    className="glass-card p-6"
+                    className="bg-white dark:bg-black border-4 border-black dark:border-white p-6 shadow-neo"
                   >
-                    <h3 className="font-heading font-semibold mb-4">Important Dates</h3>
-                    <div className="space-y-3">
+                    <h3 className="text-xl font-black uppercase mb-4 border-b-4 border-black pb-2">Timeline</h3>
+                    <div className="space-y-4">
                       {hackathon.application_deadline && (
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
-                            <Clock className="w-5 h-5 text-primary" />
+                        <div className="flex items-center gap-4 group">
+                          <div className="w-12 h-12 border-4 border-black bg-primary flex items-center justify-center shadow-sm group-hover:translate-x-1 transition-transform">
+                            <Clock className="w-6 h-6 text-black" />
                           </div>
                           <div>
-                            <p className="text-sm text-muted-foreground">Application Deadline</p>
-                            <p className="font-medium">{format(new Date(hackathon.application_deadline), 'MMM d, yyyy')}</p>
+                            <p className="text-xs font-bold uppercase text-muted-foreground">Applications Close</p>
+                            <p className="font-black font-mono">{format(new Date(hackathon.application_deadline), 'MMM d, yyyy')}</p>
                           </div>
                         </div>
                       )}
                       {hackathon.start_date && (
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-lg bg-green-500/20 flex items-center justify-center">
-                            <Calendar className="w-5 h-5 text-green-400" />
+                        <div className="flex items-center gap-4 group">
+                          <div className="w-12 h-12 border-4 border-black bg-green-400 flex items-center justify-center shadow-sm group-hover:translate-x-1 transition-transform">
+                            <Calendar className="w-6 h-6 text-black" />
                           </div>
                           <div>
-                            <p className="text-sm text-muted-foreground">Hackathon Starts</p>
-                            <p className="font-medium">{format(new Date(hackathon.start_date), 'MMM d, yyyy')}</p>
+                            <p className="text-xs font-bold uppercase text-muted-foreground">System Start</p>
+                            <p className="font-black font-mono">{format(new Date(hackathon.start_date), 'MMM d, yyyy')}</p>
                           </div>
                         </div>
                       )}
                       {hackathon.end_date && (
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-lg bg-secondary/20 flex items-center justify-center">
-                            <Trophy className="w-5 h-5 text-secondary" />
+                        <div className="flex items-center gap-4 group">
+                          <div className="w-12 h-12 border-4 border-black bg-red-400 flex items-center justify-center shadow-sm group-hover:translate-x-1 transition-transform">
+                            <Trophy className="w-6 h-6 text-black" />
                           </div>
                           <div>
-                            <p className="text-sm text-muted-foreground">Hackathon Ends</p>
-                            <p className="font-medium">{format(new Date(hackathon.end_date), 'MMM d, yyyy')}</p>
+                            <p className="text-xs font-bold uppercase text-muted-foreground">System Terminate</p>
+                            <p className="font-black font-mono">{format(new Date(hackathon.end_date), 'MMM d, yyyy')}</p>
                           </div>
                         </div>
                       )}

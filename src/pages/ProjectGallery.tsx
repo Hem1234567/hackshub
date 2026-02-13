@@ -78,10 +78,10 @@ export default function ProjectGallery() {
   // Filter projects
   const filteredProjects = useMemo(() => {
     if (!projects) return [];
-    
+
     return projects.filter(project => {
       // Search filter
-      const matchesSearch = searchQuery === '' || 
+      const matchesSearch = searchQuery === '' ||
         project.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         project.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         project.team?.team_name.toLowerCase().includes(searchQuery.toLowerCase());
@@ -104,19 +104,19 @@ export default function ProjectGallery() {
 
   return (
     <Layout>
-      <div className="min-h-screen py-8">
+      <div className="min-h-screen py-12 bg-background">
         <div className="container mx-auto px-4">
           {/* Header */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-center mb-12"
+            className="mb-12 border-b-4 border-black dark:border-white pb-6"
           >
-            <h1 className="text-4xl md:text-5xl font-heading font-bold mb-4">
-              <span className="gradient-text">Project Gallery</span>
+            <h1 className="text-5xl md:text-7xl font-black uppercase mb-4 tracking-tighter">
+              Project <span className="text-primary bg-black px-4 transform skew-x-[-10deg] inline-block">Gallery</span>
             </h1>
-            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-              Explore innovative projects built during hackathons. Get inspired by what developers have created.
+            <p className="text-xl font-mono text-muted-foreground uppercase max-w-2xl border-l-4 border-black pl-4">
+              Explore innovative artifacts. Witness the future of development.
             </p>
           </motion.div>
 
@@ -125,27 +125,27 @@ export default function ProjectGallery() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="mb-8"
+            className="mb-12"
           >
-            <div className="flex flex-col md:flex-row gap-4">
+            <div className="flex flex-col md:flex-row gap-6">
               <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 text-black" />
                 <Input
-                  placeholder="Search projects, teams, or descriptions..."
+                  placeholder="SEARCH PROTOCOLS, UNITS, OR DATA..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 bg-muted/50 border-border"
+                  className="pl-12 bg-white dark:bg-black border-4 border-black dark:border-white h-14 font-bold uppercase text-lg shadow-neo focus-visible:ring-0 focus-visible:translate-x-[2px] focus-visible:translate-y-[2px] focus-visible:shadow-none transition-all placeholder:text-muted-foreground/70"
                 />
               </div>
               <Button
                 variant="outline"
                 onClick={() => setShowFilters(!showFilters)}
-                className={showFilters ? 'bg-primary/20 border-primary' : ''}
+                className={`h-14 px-8 border-4 border-black dark:border-white font-black uppercase text-lg shadow-neo hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all bg-white dark:bg-black ${showFilters ? 'bg-primary text-black' : 'text-black dark:text-white'}`}
               >
-                <Filter className="w-4 h-4 mr-2" />
-                Filter by Tech
+                <Filter className="w-5 h-5 mr-3" />
+                TECH FILTER
                 {selectedTechStack.length > 0 && (
-                  <Badge className="ml-2 bg-primary text-primary-foreground">
+                  <Badge className="ml-3 bg-black text-white border-2 border-white rounded-none">
                     {selectedTechStack.length}
                   </Badge>
                 )}
@@ -159,33 +159,32 @@ export default function ProjectGallery() {
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: 'auto' }}
                   exit={{ opacity: 0, height: 0 }}
-                  className="mt-4"
+                  className="mt-6 overflow-hidden"
                 >
-                  <div className="glass-card p-4">
-                    <div className="flex items-center justify-between mb-3">
-                      <h3 className="text-sm font-medium">Filter by Technology</h3>
+                  <div className="bg-white dark:bg-black border-4 border-black dark:border-white p-6 shadow-neo">
+                    <div className="flex items-center justify-between mb-4 pb-4 border-b-2 border-dashed border-black dark:border-white">
+                      <h3 className="text-lg font-black uppercase">Filter by Technology</h3>
                       {selectedTechStack.length > 0 && (
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => setSelectedTechStack([])}
-                          className="text-muted-foreground"
+                          className="text-destructive font-bold uppercase hover:bg-destructive/10"
                         >
-                          <X className="w-4 h-4 mr-1" />
-                          Clear all
+                          <X className="w-4 h-4 mr-2" />
+                          RESET FILTERS
                         </Button>
                       )}
                     </div>
-                    <div className="flex flex-wrap gap-2">
+                    <div className="flex flex-wrap gap-3">
                       {allTechStack.map((tech) => (
                         <Badge
                           key={tech}
-                          variant={selectedTechStack.includes(tech) ? 'default' : 'outline'}
-                          className={`cursor-pointer transition-all ${
-                            selectedTechStack.includes(tech)
-                              ? 'bg-primary text-primary-foreground'
-                              : 'hover:bg-muted'
-                          }`}
+                          variant="outline"
+                          className={`cursor-pointer transition-all px-4 py-2 rounded-none border-2 border-black font-bold uppercase text-sm user-select-none ${selectedTechStack.includes(tech)
+                            ? 'bg-black text-white shadow-[2px_2px_0px_0px_rgba(255,255,255,1)] dark:bg-white dark:text-black'
+                            : 'bg-white text-black hover:bg-accent hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-neo'
+                            }`}
                           onClick={() => toggleTechFilter(tech)}
                         >
                           {tech}
@@ -200,84 +199,81 @@ export default function ProjectGallery() {
 
           {/* Projects Grid */}
           {isLoading ? (
-            <div className="flex items-center justify-center py-12">
-              <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            <div className="flex items-center justify-center py-24">
+              <Loader2 className="w-16 h-16 animate-spin text-black dark:text-white" />
             </div>
           ) : filteredProjects.length > 0 ? (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
               {filteredProjects.map((project, index) => (
                 <motion.div
                   key={project.id}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.05 }}
-                  className="glass-card overflow-hidden group hover:border-primary/50 transition-colors"
+                  className="bg-white dark:bg-black border-4 border-black dark:border-white shadow-neo hover:translate-y-[-4px] hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] dark:hover:shadow-[8px_8px_0px_0px_rgba(255,255,255,1)] transition-all group flex flex-col h-full"
                 >
                   {/* Project Image */}
-                  <div className="aspect-video bg-muted/30 relative overflow-hidden">
+                  <div className="aspect-video bg-muted relative overflow-hidden border-b-4 border-black dark:border-white">
                     {project.screenshots && project.screenshots[0] ? (
                       <img
                         src={project.screenshots[0]}
                         alt={project.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-300"
                       />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <Code2 className="w-12 h-12 text-muted-foreground" />
+                      <div className="w-full h-full flex items-center justify-center bg-secondary">
+                        <Code2 className="w-16 h-16 text-black opacity-20" />
                       </div>
                     )}
-                    
+
                     {/* Winner Badge */}
                     {project.winner_position && (
-                      <div className="absolute top-3 left-3">
-                        <Badge className={`${
-                          project.winner_position === 1 
-                            ? 'bg-yellow-500/90 text-yellow-950' 
-                            : project.winner_position === 2 
-                            ? 'bg-gray-400/90 text-gray-950' 
-                            : 'bg-amber-700/90 text-amber-100'
-                        }`}>
-                          <Trophy className="w-3 h-3 mr-1" />
-                          {project.winner_position === 1 ? '1st Place' : 
-                           project.winner_position === 2 ? '2nd Place' : '3rd Place'}
+                      <div className="absolute top-0 right-0">
+                        <Badge className={`rounded-none border-l-4 border-b-4 border-black px-4 py-2 font-black uppercase text-lg ${project.winner_position === 1
+                          ? 'bg-yellow-400 text-black'
+                          : project.winner_position === 2
+                            ? 'bg-gray-300 text-black'
+                            : 'bg-orange-400 text-black'
+                          }`}>
+                          <Trophy className="w-5 h-5 mr-2" />
+                          #{project.winner_position} Place
                         </Badge>
                       </div>
                     )}
                   </div>
 
                   {/* Content */}
-                  <div className="p-5">
-                    <div className="flex items-start justify-between mb-2">
-                      <h3 className="font-heading font-semibold text-lg line-clamp-1">
+                  <div className="p-6 flex flex-col flex-1">
+                    <div className="mb-4">
+                      <h3 className="text-2xl font-black uppercase mb-2 line-clamp-1 group-hover:text-primary transition-colors">
                         {project.title}
                       </h3>
-                    </div>
-
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground mb-3">
-                      <Users className="w-4 h-4" />
-                      <span>{project.team?.team_name || 'Unknown Team'}</span>
+                      <div className="flex items-center gap-2 text-sm font-mono text-muted-foreground border-b-2 border-black/10 dark:border-white/10 pb-4">
+                        <Users className="w-4 h-4" />
+                        <span className="uppercase">{project.team?.team_name || 'UNKNOWN UNIT'}</span>
+                      </div>
                     </div>
 
                     {project.description && (
-                      <p className="text-sm text-muted-foreground line-clamp-2 mb-4">
+                      <p className="font-mono text-sm mb-6 line-clamp-3 text-muted-foreground flex-1">
                         {project.description}
                       </p>
                     )}
 
                     {/* Tech Stack */}
                     {project.tech_stack && project.tech_stack.length > 0 && (
-                      <div className="flex flex-wrap gap-1.5 mb-4">
+                      <div className="flex flex-wrap gap-2 mb-6">
                         {project.tech_stack.slice(0, 4).map((tech) => (
-                          <Badge 
-                            key={tech} 
-                            variant="outline" 
-                            className="text-xs"
+                          <Badge
+                            key={tech}
+                            variant="outline"
+                            className="bg-white text-black border-2 border-black rounded-none font-bold uppercase text-[10px]"
                           >
                             {tech}
                           </Badge>
                         ))}
                         {project.tech_stack.length > 4 && (
-                          <Badge variant="outline" className="text-xs">
+                          <Badge variant="outline" className="bg-black text-white border-2 border-black rounded-none font-bold uppercase text-[10px]">
                             +{project.tech_stack.length - 4}
                           </Badge>
                         )}
@@ -285,41 +281,31 @@ export default function ProjectGallery() {
                     )}
 
                     {/* Actions */}
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-3 mt-auto pt-4 border-t-4 border-black dark:border-white">
                       {project.repo_url && (
-                        <a href={project.repo_url} target="_blank" rel="noopener noreferrer">
-                          <Button size="sm" variant="outline">
-                            <Github className="w-4 h-4 mr-1" />
-                            Code
+                        <a href={project.repo_url} target="_blank" rel="noopener noreferrer" className="flex-1">
+                          <Button size="sm" variant="outline" className="w-full border-2 border-black font-bold uppercase hover:bg-black hover:text-white transition-colors">
+                            <Github className="w-4 h-4 mr-2" />
+                            CODE
                           </Button>
                         </a>
                       )}
                       {project.demo_url && (
-                        <a href={project.demo_url} target="_blank" rel="noopener noreferrer">
-                          <Button size="sm" variant="outline">
-                            <ExternalLink className="w-4 h-4 mr-1" />
-                            Demo
+                        <a href={project.demo_url} target="_blank" rel="noopener noreferrer" className="flex-1">
+                          <Button size="sm" variant="outline" className="w-full border-2 border-black font-bold uppercase hover:bg-black hover:text-white transition-colors">
+                            <ExternalLink className="w-4 h-4 mr-2" />
+                            DEMO
                           </Button>
                         </a>
                       )}
                       {project.video_url && (
                         <a href={project.video_url} target="_blank" rel="noopener noreferrer">
-                          <Button size="sm" variant="outline">
-                            <Play className="w-4 h-4 mr-1" />
-                            Video
+                          <Button size="sm" variant="outline" className="border-2 border-black font-bold uppercase px-3 hover:bg-red-500 hover:text-white hover:border-red-600 transition-colors">
+                            <Play className="w-4 h-4" />
                           </Button>
                         </a>
                       )}
                     </div>
-
-                    {/* Hackathon Badge */}
-                    {project.hackathon && (
-                      <div className="mt-4 pt-4 border-t border-border">
-                        <Badge variant="secondary" className="text-xs">
-                          {project.hackathon.title}
-                        </Badge>
-                      </div>
-                    )}
                   </div>
                 </motion.div>
               ))}
@@ -328,19 +314,22 @@ export default function ProjectGallery() {
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="text-center py-16"
+              className="text-center py-24 border-4 border-dashed border-black/20 dark:border-white/20"
             >
-              <Code2 className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
-              <h2 className="text-2xl font-heading font-bold mb-2">No projects found</h2>
-              <p className="text-muted-foreground">
+              <div className="w-24 h-24 bg-muted border-4 border-black mx-auto mb-6 flex items-center justify-center rounded-full">
+                <Code2 className="w-12 h-12 text-muted-foreground" />
+              </div>
+              <h2 className="text-3xl font-black uppercase mb-4">No artifacts detected</h2>
+              <p className="text-xl font-mono text-muted-foreground max-w-lg mx-auto">
                 {searchQuery || selectedTechStack.length > 0
-                  ? 'Try adjusting your search or filters'
-                  : 'No projects have been submitted yet'}
+                  ? 'ADJUST SEARCH PARAMETERS OR FILTERS TO LOCATE ARTIFACTS.'
+                  : 'SYSTEM IS AWAITING PROJECT SUBMISSIONS.'}
               </p>
             </motion.div>
           )}
         </div>
       </div>
     </Layout>
+
   );
 }
