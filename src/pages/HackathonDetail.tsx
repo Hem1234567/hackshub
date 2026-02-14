@@ -196,20 +196,20 @@ export default function HackathonDetail() {
           <div className="absolute top-0 right-0 p-4 flex gap-2">
             <Badge
               className={`border-4 border-black font-bold uppercase rounded-none shadow-neo ${hackathon.status === 'live'
-                  ? 'bg-green-400 text-black'
-                  : hackathon.status === 'draft'
-                    ? 'bg-yellow-400 text-black'
-                    : 'bg-red-400 text-black'
+                ? 'bg-green-400 text-black'
+                : hackathon.status === 'draft'
+                  ? 'bg-yellow-400 text-black'
+                  : 'bg-red-400 text-black'
                 }`}
             >
               {hackathon.status === 'live' ? 'Live System' : hackathon.status === 'draft' ? 'Initializing' : 'Terminated'}
             </Badge>
             <Badge
               className={`border-4 border-black font-bold uppercase rounded-none shadow-neo ${hackathon.mode === 'online'
-                  ? 'bg-blue-400 text-black'
-                  : hackathon.mode === 'offline'
-                    ? 'bg-purple-400 text-black'
-                    : 'bg-orange-400 text-black'
+                ? 'bg-blue-400 text-black'
+                : hackathon.mode === 'offline'
+                  ? 'bg-purple-400 text-black'
+                  : 'bg-orange-400 text-black'
                 }`}
             >
               <ModeIcon className="w-4 h-4 mr-1" />
@@ -268,8 +268,8 @@ export default function HackathonDetail() {
                   </Badge>
                 ) : hasTeamMembership ? (
                   <Badge className={`border-4 border-black font-black uppercase text-lg px-6 py-2 rounded-none shadow-neo ${isTeamMemberApproved
-                      ? "bg-green-400 text-black"
-                      : "bg-yellow-400 text-black"
+                    ? "bg-green-400 text-black"
+                    : "bg-yellow-400 text-black"
                     }`}>
                     {isTeamMemberApproved ? 'Unit Assigned' : 'Awaiting Clearance'}
                   </Badge>
@@ -311,6 +311,12 @@ export default function HackathonDetail() {
                     Gallery
                   </TabsTrigger>
                 )}
+                <Link to={`/hackathon/${id}/leaderboard`}>
+                  <Button variant="ghost" className="border-2 border-transparent font-bold uppercase rounded-none transition-all hover:bg-muted/50 h-full">
+                    <Trophy className="w-4 h-4 mr-2" />
+                    Leaderboard
+                  </Button>
+                </Link>
                 {user && !isParticipating && !isDeadlinePassed && (
                   <TabsTrigger value="apply" className="border-2 border-transparent data-[state=active]:border-black data-[state=active]:bg-primary data-[state=active]:text-black font-bold uppercase rounded-none transition-all">Apply</TabsTrigger>
                 )}
@@ -382,12 +388,12 @@ export default function HackathonDetail() {
                             <div
                               key={prize.id}
                               className={`p-6 border-4 border-black dark:border-white ${index === 0
-                                  ? 'bg-yellow-400 shadow-neo'
-                                  : index === 1
-                                    ? 'bg-gray-300 shadow-neo-sm'
-                                    : index === 2
-                                      ? 'bg-orange-400 shadow-neo-sm'
-                                      : 'bg-white dark:bg-black'
+                                ? 'bg-yellow-400 shadow-neo'
+                                : index === 1
+                                  ? 'bg-gray-300 shadow-neo-sm'
+                                  : index === 2
+                                    ? 'bg-orange-400 shadow-neo-sm'
+                                    : 'bg-white dark:bg-black'
                                 }`}
                             >
                               <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">

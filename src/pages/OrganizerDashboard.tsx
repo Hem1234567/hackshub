@@ -24,6 +24,7 @@ import {
   Presentation,
   Scale,
   BarChart3,
+  QrCode,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -45,6 +46,7 @@ import { cn } from "@/lib/utils";
 import { JudgingTab } from '@/components/organizer/JudgingTab';
 import { JuryManagementTab } from '@/components/organizer/JuryManagementTab';
 import { JuryResultsTab } from '@/components/organizer/JuryResultsTab';
+import { CheckInTab } from '@/components/organizer/CheckInTab';
 import { PresentationViewModal } from '@/components/hackathon/PresentationViewModal';
 import { ApplicationDetailModal } from '@/components/organizer/ApplicationDetailModal';
 
@@ -209,7 +211,7 @@ export default function OrganizerDashboard() {
       if ((status === 'accepted' || status === 'rejected' || status === 'waitlisted') && hackathon) {
         try {
           const { data: sessionData } = await supabase.auth.getSession();
-          await supabase.functions.invoke('send-application-notification', {
+          const { error: funcError } = await supabase.functions.invoke('send-application-notification', {
             body: {
               applicationId: appId,
               status,
@@ -219,8 +221,19 @@ export default function OrganizerDashboard() {
               Authorization: `Bearer ${sessionData.session?.access_token}`,
             },
           });
-        } catch (notifyError) {
+
+          if (funcError) {
+            throw new Error(`Edge Function Error: ${funcError.message}`);
+          }
+        } catch (notifyError: any) {
           console.error('Failed to send notification:', notifyError);
+          // Show a separate toast for email failure so the user knows
+          toast({
+            title: 'Email Notification Failed',
+            description: `Status updated, but email failed: ${notifyError.message || 'Unknown error'}`,
+            variant: 'destructive',
+            duration: 5000,
+          });
         }
       }
     },
@@ -366,6 +379,12 @@ export default function OrganizerDashboard() {
                 </div>
 
                 <div className="flex items-center gap-4">
+                  <Link to={`/organizer/${id}/scanner`}>
+                    <Button className="bg-primary text-black hover:bg-primary/90 border-4 border-black shadow-neo hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none font-bold uppercase">
+                      <QrCode className="w-4 h-4 mr-2" />
+                      LAUNCH SCANNER
+                    </Button>
+                  </Link>
                   {hackathon.status === 'draft' && (
                     <Button
                       onClick={() => updateHackathonStatusMutation.mutate('live')}
@@ -472,6 +491,7 @@ export default function OrganizerDashboard() {
                     { value: 'judging', icon: Star, label: 'Judging' },
                     { value: 'jury', icon: Scale, label: 'Jury' },
                     { value: 'jury-results', icon: BarChart3, label: 'Results' },
+                    { value: 'check-in', icon: CheckCircle2, label: 'Check-in' },
                     { value: 'settings', icon: Settings, label: 'Settings' },
                   ].map((tab) => (
                     <TabsTrigger
@@ -727,6 +747,10 @@ export default function OrganizerDashboard() {
 
                 <TabsContent value="jury-results">
                   <JuryResultsTab hackathonId={id!} />
+                </TabsContent>
+
+                <TabsContent value="check-in">
+                  <CheckInTab hackathonId={id!} />
                 </TabsContent>
 
                 <TabsContent value="settings">

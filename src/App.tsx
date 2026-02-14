@@ -15,7 +15,9 @@ import CreateHackathon from "./pages/CreateHackathon";
 import Profile from "./pages/Profile";
 import ProjectSubmission from "./pages/ProjectSubmission";
 import OrganizerDashboard from "./pages/OrganizerDashboard";
+import OrganizerScanner from "./pages/OrganizerScanner";
 import ProjectGallery from "./pages/ProjectGallery";
+import Leaderboard from "./pages/Leaderboard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -27,66 +29,75 @@ const App = () => (
         <TooltipProvider>
           <Toaster />
           <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/hackathons" element={<Hackathons />} />
-            <Route path="/gallery" element={<ProjectGallery />} />
-            <Route path="/hackathon/:id" element={<HackathonDetail />} />
-            <Route
-              path="/dashboard"
-              element={
-                <ProtectedRoute>
-                  <Dashboard />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/profile"
-              element={
-                <ProtectedRoute>
-                  <Profile />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/create-hackathon"
-              element={
-                <ProtectedRoute>
-                  <CreateHackathon />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/create-hackathon/:id"
-              element={
-                <ProtectedRoute>
-                  <CreateHackathon />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/organizer/:id"
-              element={
-                <ProtectedRoute>
-                  <OrganizerDashboard />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/project/:hackathonId/:teamId"
-              element={
-                <ProtectedRoute>
-                  <ProjectSubmission />
-                </ProtectedRoute>
-              }
-            />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
-    </AuthProvider>
+          <BrowserRouter>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/auth" element={<Auth />} />
+              <Route path="/hackathons" element={<Hackathons />} />
+              <Route path="/gallery" element={<ProjectGallery />} />
+              <Route path="/hackathon/:id" element={<HackathonDetail />} />
+              <Route
+                path="/dashboard"
+                element={
+                  <ProtectedRoute>
+                    <Dashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/profile"
+                element={
+                  <ProtectedRoute>
+                    <Profile />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/create-hackathon"
+                element={
+                  <ProtectedRoute>
+                    <CreateHackathon />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/create-hackathon/:id"
+                element={
+                  <ProtectedRoute>
+                    <CreateHackathon />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/organizer/:id"
+                element={
+                  <ProtectedRoute>
+                    <OrganizerDashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/project/:hackathonId/:teamId"
+                element={
+                  <ProtectedRoute>
+                    <ProjectSubmission />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/organizer/:id/scanner"
+                element={
+                  <ProtectedRoute>
+                    <OrganizerScanner />
+                  </ProtectedRoute>
+                }
+              />
+              <Route path="/hackathon/:id/leaderboard" element={<Leaderboard />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </TooltipProvider>
+      </AuthProvider>
     </ThemeProvider>
   </QueryClientProvider>
 );
