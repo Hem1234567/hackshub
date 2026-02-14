@@ -19,6 +19,7 @@ const OrganizerScanner = () => {
     const [projectId, setProjectId] = useState<string | null>(null);
     const [checkInLoading, setCheckInLoading] = useState(false);
     const [isScanning, setIsScanning] = useState(false);
+    const [manualCode, setManualCode] = useState("");
     const scannerRef = useRef<Html5Qrcode | null>(null);
 
     // Function to handle successful scan
@@ -60,8 +61,36 @@ const OrganizerScanner = () => {
             stopScanner();
         } else {
             // Optional: Show toast for invalid QR but keep scanning?
-            // For now, we don't stop scanning on invalid invalid format, just ignore or log
             console.log("Invalid QR format:", decodedText);
+        }
+    };
+
+    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (!e.target.files || e.target.files.length === 0) return;
+
+        const file = e.target.files[0];
+        const html5QrCode = new Html5Qrcode("reader-hidden");
+
+        try {
+            setCheckInLoading(true);
+            const decodedText = await html5QrCode.scanFile(file, true);
+            onScanSuccess(decodedText, null);
+        } catch (err) {
+            console.error("Error scanning file", err);
+            toast({
+                title: "Scan Failed",
+                description: "Could not find a QR code in this image.",
+                variant: "destructive"
+            });
+        } finally {
+            setCheckInLoading(false);
+            html5QrCode.clear();
+        }
+    };
+
+    const handleManualSubmit = () => {
+        if (manualCode.trim().length > 0) {
+            onScanSuccess(manualCode, null);
         }
     };
 
@@ -76,9 +105,9 @@ const OrganizerScanner = () => {
 
             const config = {
                 fps: 15,
-                qrbox: { width: 300, height: 300 },
                 aspectRatio: 1.0,
                 formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE]
+                // qrbox removed for full frame scanning
             };
 
             await html5QrCode.start(
@@ -86,7 +115,6 @@ const OrganizerScanner = () => {
                 config,
                 onScanSuccess,
                 (errorMessage) => {
-                    // Only log real errors, not parsing errors for every frame
                     // console.log(errorMessage); 
                 }
             );
@@ -240,6 +268,7 @@ const OrganizerScanner = () => {
         setScannedData(null);
         setProjectId(null);
         setIsScanning(false);
+        setManualCode("");
     };
 
     const isCheckedIn = (teamDetails?.application?.application_data as any)?.checked_in;
@@ -259,6 +288,9 @@ const OrganizerScanner = () => {
 
                     {!scannedData ? (
                         <div className="bg-white dark:bg-black border-4 border-black dark:border-white p-6 shadow-neo">
+                            {/* Hidden reader for file scan */}
+                            <div id="reader-hidden" className="hidden"></div>
+
                             <div className="relative bg-black h-[300px] mb-4 overflow-hidden flex items-center justify-center">
                                 <div id="reader" className="w-full h-full"></div>
                                 {!isScanning && (
@@ -268,23 +300,80 @@ const OrganizerScanner = () => {
                                 )}
                             </div>
 
-                            {!isScanning ? (
-                                <Button
-                                    onClick={startScanner}
-                                    className="w-full h-12 text-lg font-bold uppercase bg-primary text-black border-2 border-black shadow-neo"
-                                >
-                                    <Camera className="w-5 h-5 mr-2" />
-                                    START CAMERA
-                                </Button>
-                            ) : (
-                                <Button
-                                    onClick={stopScanner}
-                                    variant="destructive"
-                                    className="w-full h-12 text-lg font-bold uppercase border-2 border-black shadow-neo"
-                                >
-                                    STOP CAMERA
-                                </Button>
-                            )}
+                            <div className="space-y-4">
+                                {!isScanning ? (
+                                    <Button
+                                        onClick={startScanner}
+                                        className="w-full h-12 text-lg font-bold uppercase bg-primary text-black border-2 border-black shadow-neo"
+                                    >
+                                        <Camera className="w-5 h-5 mr-2" />
+                                        START CAMERA
+                                    </Button>
+                                ) : (
+                                    <Button
+                                        onClick={stopScanner}
+                                        variant="destructive"
+                                        className="w-full h-12 text-lg font-bold uppercase border-2 border-black shadow-neo"
+                                    >
+                                        STOP CAMERA
+                                    </Button>
+                                )}
+
+                                <div className="relative">
+                                    <div className="absolute inset-0 flex items-center">
+                                        <span className="w-full border-t border-muted-foreground/30" />
+                                    </div>
+                                    <div className="relative flex justify-center text-xs uppercase">
+                                        <span className="bg-white dark:bg-black px-2 text-muted-foreground">
+                                            OR
+                                        </span>
+                                    </div>
+                                </div>
+
+                                {/* Manual Entry */}
+                                <div className="flex gap-2">
+                                    <input
+                                        type="text"
+                                        placeholder="ENTER TEAM ID MANUALLY"
+                                        value={manualCode}
+                                        onChange={(e) => setManualCode(e.target.value)}
+                                        className="flex-1 h-12 px-4 border-2 border-black bg-white dark:bg-black font-mono uppercase"
+                                    />
+                                    <Button
+                                        onClick={handleManualSubmit}
+                                        className="h-12 px-6 border-2 border-black font-bold uppercase shadow-neo"
+                                    >
+                                        GO
+                                    </Button>
+                                </div>
+
+                                <div className="relative">
+                                    <div className="absolute inset-0 flex items-center">
+                                        <span className="w-full border-t border-muted-foreground/30" />
+                                    </div>
+                                    <div className="relative flex justify-center text-xs uppercase">
+                                        <span className="bg-white dark:bg-black px-2 text-muted-foreground">
+                                            OR UPLOAD IMAGE
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div className="grid w-full items-center gap-1.5">
+                                    <Button
+                                        variant="outline"
+                                        className="w-full h-12 text-lg font-bold uppercase border-2 border-black shadow-neo cursor-pointer relative"
+                                    >
+                                        <input
+                                            type="file"
+                                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                            accept="image/*"
+                                            onChange={handleFileUpload}
+                                        />
+                                        <RefreshCcw className="w-5 h-5 mr-2" />
+                                        SCAN FROM IMAGE
+                                    </Button>
+                                </div>
+                            </div>
 
                             <p className="text-center mt-4 text-muted-foreground font-mono">
                                 {isScanning ? "POINT CAMERA AT TEAM QR CODE" : "CAMERA IS OFF"}
