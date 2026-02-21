@@ -31,6 +31,7 @@ export function JuryResultsTab({ hackathonId }: JuryResultsTabProps) {
   const [selectedResult, setSelectedResult] = useState<any>(null);
   const [editingScores, setEditingScores] = useState<Record<string, number>>({});
   const [isEditing, setIsEditing] = useState(false);
+  const [currentRound, setCurrentRound] = useState<1 | 2>(1);
 
   const { data: judges } = useQuery({
     queryKey: ['judges', hackathonId],
@@ -45,24 +46,26 @@ export function JuryResultsTab({ hackathonId }: JuryResultsTabProps) {
   });
 
   const { data: assignments } = useQuery({
-    queryKey: ['judge-assignments', hackathonId],
+    queryKey: ['judge-assignments', hackathonId, currentRound],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('judge_team_assignments')
         .select('*')
-        .eq('hackathon_id', hackathonId);
+        .eq('hackathon_id', hackathonId)
+        .eq('round_number', currentRound);
       if (error) throw error;
       return data;
     },
   });
 
   const { data: scores } = useQuery({
-    queryKey: ['judge-scores', hackathonId],
+    queryKey: ['judge-scores', hackathonId, currentRound],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('judge_scores')
         .select('*')
-        .eq('hackathon_id', hackathonId);
+        .eq('hackathon_id', hackathonId)
+        .eq('round_number', currentRound);
       if (error) throw error;
       return data;
     },
@@ -89,7 +92,7 @@ export function JuryResultsTab({ hackathonId }: JuryResultsTabProps) {
         .select('team_id')
         .eq('hackathon_id', hackathonId)
         .eq('status', 'accepted');
-      
+
       const teamIds = apps?.map(a => a.team_id).filter(Boolean) as string[];
       if (!teamIds?.length) return [];
 
@@ -120,7 +123,7 @@ export function JuryResultsTab({ hackathonId }: JuryResultsTabProps) {
   const getJudgeStats = (judgeId: string) => {
     const judgeAssignments = assignments?.filter(a => a.judge_id === judgeId) || [];
     const totalAssigned = judgeAssignments.length;
-    
+
     // A team is "evaluated" if all rubrics have submitted scores
     const evaluatedTeams = judgeAssignments.filter(assignment => {
       const teamScores = scores?.filter(
@@ -182,9 +185,28 @@ export function JuryResultsTab({ hackathonId }: JuryResultsTabProps) {
     <div className="space-y-6">
       {/* Summary */}
       <div className="glass-card p-6">
-        <div className="flex items-center gap-3 mb-4">
-          <BarChart3 className="w-5 h-5 text-primary" />
-          <h2 className="text-xl font-heading font-semibold">Evaluation Summary</h2>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+          <div className="flex items-center gap-3">
+            <BarChart3 className="w-5 h-5 text-primary" />
+            <h2 className="text-xl font-heading font-semibold">Evaluation Summary</h2>
+          </div>
+          {/* Round Selector */}
+          <div className="flex items-center gap-2 border-4 border-black dark:border-white p-1 shadow-neo">
+            <button
+              onClick={() => setCurrentRound(1)}
+              className={`px-4 py-2 font-bold uppercase text-sm transition-all ${currentRound === 1 ? 'bg-primary text-black' : 'hover:bg-muted/50'
+                }`}
+            >
+              Round 1
+            </button>
+            <button
+              onClick={() => setCurrentRound(2)}
+              className={`px-4 py-2 font-bold uppercase text-sm transition-all ${currentRound === 2 ? 'bg-primary text-black' : 'hover:bg-muted/50'
+                }`}
+            >
+              Round 2
+            </button>
+          </div>
         </div>
         <div className="p-4 rounded-lg bg-primary/10 border border-primary/30 mb-6">
           <p className="text-lg font-semibold">
@@ -325,9 +347,9 @@ export function JuryResultsTab({ hackathonId }: JuryResultsTabProps) {
                 <p className="text-2xl font-bold text-primary">
                   {isEditing
                     ? selectedResult.scores.reduce((acc: number, s: any) => {
-                        const rubric = rubrics.find(r => r.id === s.rubric_id);
-                        return acc + (editingScores[s.id] ?? s.score) * (rubric?.weight || 1);
-                      }, 0).toFixed(1)
+                      const rubric = rubrics.find(r => r.id === s.rubric_id);
+                      return acc + (editingScores[s.id] ?? s.score) * (rubric?.weight || 1);
+                    }, 0).toFixed(1)
                     : selectedResult.totalScore.toFixed(1)
                   }
                 </p>

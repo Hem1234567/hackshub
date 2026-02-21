@@ -177,6 +177,8 @@ export default function Dashboard() {
 
     // Add applications first
     applications?.forEach(app => {
+      // Guard: hackathon can be null if the hackathon was deleted
+      if (!app.hackathon) return;
       if (!seenHackathons.has(app.hackathon.id)) {
         seenHackathons.add(app.hackathon.id);
         participations.push({
@@ -282,7 +284,7 @@ export default function Dashboard() {
 
   return (
     <Layout>
-      <div className="min-h-screen py-12 bg-background">
+      <div className="min-h-screen py-8 sm:py-12 bg-background">
         <div className="container mx-auto px-4">
           {/* Header */}
           <motion.div
@@ -290,7 +292,7 @@ export default function Dashboard() {
             animate={{ opacity: 1, scale: 1 }}
             className="mb-12 border-b-4 border-black dark:border-white pb-8"
           >
-            <h1 className="text-4xl md:text-5xl font-black uppercase mb-4 tracking-tighter">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-black uppercase mb-4 tracking-tighter">
               Welcome back, <span className="bg-primary px-2 text-black">{profile?.full_name || 'Hacker'}</span>
             </h1>
             <p className="text-xl font-mono text-muted-foreground uppercase">
@@ -303,7 +305,7 @@ export default function Dashboard() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-12"
+            className="grid grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-6 mb-8 sm:mb-12"
           >
             <div className="bg-card border-4 border-black dark:border-white p-6 shadow-neo hover:shadow-neo-lg transition-all hover:-translate-y-1">
               <div className="flex items-center gap-4">

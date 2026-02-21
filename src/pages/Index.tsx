@@ -53,7 +53,7 @@ export default function Index() {
               <span className="text-sm font-bold text-black uppercase">The #1 Platform for Hackathons</span>
             </div>
 
-            <h1 className="text-5xl md:text-8xl font-black mb-6 leading-none tracking-tighter uppercase relative">
+            <h1 className="text-4xl sm:text-5xl md:text-8xl font-black mb-4 sm:mb-6 leading-none tracking-tighter uppercase relative">
               Build, Innovate,<br />
               <span className="text-primary bg-black px-4 transform skew-x-[-10deg] inline-block mt-2">Win Together</span>
             </h1>
@@ -86,7 +86,7 @@ export default function Index() {
           </motion.div>
 
           {/* Stats */}
-          <div className="mt-24 grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8 max-w-5xl mx-auto">
+          <div className="mt-12 sm:mt-24 grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 md:gap-8 max-w-5xl mx-auto">
             {stats.map((stat, index) => (
               <div
                 key={stat.label}

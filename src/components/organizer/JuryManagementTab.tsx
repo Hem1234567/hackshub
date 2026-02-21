@@ -28,6 +28,7 @@ export function JuryManagementTab({ hackathonId }: JuryManagementTabProps) {
   const queryClient = useQueryClient();
   const [juryEmail, setJuryEmail] = useState('');
   const [assigningJudge, setAssigningJudge] = useState<any>(null);
+  const [currentRound, setCurrentRound] = useState<1 | 2>(1);
 
   const { data: judges, isLoading } = useQuery({
     queryKey: ['judges', hackathonId],
@@ -44,12 +45,13 @@ export function JuryManagementTab({ hackathonId }: JuryManagementTabProps) {
   });
 
   const { data: assignments } = useQuery({
-    queryKey: ['judge-assignments', hackathonId],
+    queryKey: ['judge-assignments', hackathonId, currentRound],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('judge_team_assignments')
         .select('*')
-        .eq('hackathon_id', hackathonId);
+        .eq('hackathon_id', hackathonId)
+        .eq('round_number', currentRound);
 
       if (error) throw error;
       return data;
@@ -67,7 +69,7 @@ export function JuryManagementTab({ hackathonId }: JuryManagementTabProps) {
         .eq('status', 'accepted');
 
       if (appsError) throw appsError;
-      
+
       const teamIds = apps?.map(a => a.team_id).filter(Boolean) as string[];
       if (teamIds.length === 0) return [];
 
@@ -107,10 +109,10 @@ export function JuryManagementTab({ hackathonId }: JuryManagementTabProps) {
       toast({ title: 'Judge added successfully' });
     },
     onError: (error: any) => {
-      toast({ 
-        title: 'Failed to add judge', 
+      toast({
+        title: 'Failed to add judge',
         description: error.message?.includes('duplicate') ? 'This judge is already added' : error.message,
-        variant: 'destructive' 
+        variant: 'destructive'
       });
     },
   });
@@ -173,10 +175,29 @@ export function JuryManagementTab({ hackathonId }: JuryManagementTabProps) {
 
       {/* Jury List */}
       <div className="glass-card p-6">
-        <h2 className="text-xl font-heading font-semibold mb-4 flex items-center gap-2">
-          <Users className="w-5 h-5 text-primary" />
-          Jury Members ({judges?.length || 0})
-        </h2>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+          <h2 className="text-xl font-heading font-semibold flex items-center gap-2">
+            <Users className="w-5 h-5 text-primary" />
+            Jury Members ({judges?.length || 0})
+          </h2>
+          {/* Round Selector */}
+          <div className="flex items-center gap-2 border-4 border-black dark:border-white p-1 shadow-neo">
+            <button
+              onClick={() => setCurrentRound(1)}
+              className={`px-4 py-2 font-bold uppercase text-sm transition-all ${currentRound === 1 ? 'bg-primary text-black' : 'hover:bg-muted/50'
+                }`}
+            >
+              Round 1
+            </button>
+            <button
+              onClick={() => setCurrentRound(2)}
+              className={`px-4 py-2 font-bold uppercase text-sm transition-all ${currentRound === 2 ? 'bg-primary text-black' : 'hover:bg-muted/50'
+                }`}
+            >
+              Round 2
+            </button>
+          </div>
+        </div>
 
         {isLoading ? (
           <div className="flex items-center justify-center py-8">
@@ -253,6 +274,7 @@ export function JuryManagementTab({ hackathonId }: JuryManagementTabProps) {
           teams={acceptedTeams || []}
           existingAssignments={assignments?.filter(a => a.judge_id === assigningJudge.id) || []}
           allAssignments={assignments || []}
+          round={currentRound}
         />
       )}
     </div>

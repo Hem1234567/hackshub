@@ -22,6 +22,7 @@ interface JuryAssignTeamsModalProps {
   teams: any[];
   existingAssignments: any[];
   allAssignments: any[];
+  round: 1 | 2;
 }
 
 export function JuryAssignTeamsModal({
@@ -32,6 +33,7 @@ export function JuryAssignTeamsModal({
   teams,
   existingAssignments,
   allAssignments,
+  round,
 }: JuryAssignTeamsModalProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -64,6 +66,7 @@ export function JuryAssignTeamsModal({
           judge_id: judge.id,
           team_id: teamId,
           hackathon_id: hackathonId,
+          round_number: round,
         }));
 
       if (toAdd.length > 0) {
@@ -101,6 +104,7 @@ export function JuryAssignTeamsModal({
           <DialogTitle className="flex items-center gap-2">
             <Users className="w-5 h-5 text-primary" />
             Assign Teams to {judge.email}
+            <Badge variant="outline" className="text-xs border-2 rounded-none font-bold uppercase ml-1">Round {round}</Badge>
           </DialogTitle>
         </DialogHeader>
 
@@ -109,20 +113,19 @@ export function JuryAssignTeamsModal({
             teams.map((team, index) => {
               const assignedToOther = isAssignedToOther(team.id);
               const isSelected = selectedTeams.includes(team.id);
-              
+
               return (
                 <motion.div
                   key={team.id}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.03 }}
-                  className={`flex items-center gap-3 p-3 rounded-lg transition-colors cursor-pointer ${
-                    assignedToOther 
-                      ? 'bg-muted/20 opacity-50' 
+                  className={`flex items-center gap-3 p-3 rounded-lg transition-colors cursor-pointer ${assignedToOther
+                      ? 'bg-muted/20 opacity-50'
                       : isSelected
-                      ? 'bg-primary/10 border border-primary/30'
-                      : 'bg-muted/30 hover:bg-muted/40'
-                  }`}
+                        ? 'bg-primary/10 border border-primary/30'
+                        : 'bg-muted/30 hover:bg-muted/40'
+                    }`}
                   onClick={() => !assignedToOther && toggleTeam(team.id)}
                 >
                   <Checkbox

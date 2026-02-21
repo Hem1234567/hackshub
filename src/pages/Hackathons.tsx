@@ -94,15 +94,15 @@ export default function Hackathons() {
     <Layout>
       <div className="min-h-screen bg-background">
         {/* Header */}
-        <section className="py-16 border-b-4 border-black dark:border-white relative overflow-hidden">
+        <section className="py-10 sm:py-16 border-b-4 border-black dark:border-white relative overflow-hidden">
           <div className="container mx-auto px-4 relative z-10">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               className="text-center max-w-3xl mx-auto"
             >
-              <h1 className="text-5xl md:text-7xl font-black uppercase tracking-tighter mb-6">
-                Discover <span className="text-primary bg-black px-4 transform skew-x-[-10deg] inline-block">Hackathons</span>
+              <h1 className="text-4xl sm:text-5xl md:text-7xl font-black uppercase tracking-tighter mb-4 sm:mb-6">
+                Discover <span className="text-primary bg-black px-2 sm:px-4 transform skew-x-[-10deg] inline-block">Hackathons</span>
               </h1>
               <p className="text-xl md:text-2xl font-mono font-bold text-muted-foreground bg-white/50 p-2 inline-block border-2 border-transparent">
                 Find the perfect hackathon to showcase your skills and build something amazing
@@ -112,7 +112,7 @@ export default function Hackathons() {
         </section>
 
         {/* Filters */}
-        <section className="py-6 border-b-4 border-black dark:border-white sticky top-16 z-40 bg-background">
+        <section className="py-4 sm:py-6 border-b-4 border-black dark:border-white sticky top-16 sm:top-20 z-40 bg-background">
           <div className="container mx-auto px-4">
             <div className="flex flex-col md:flex-row gap-4">
               <div className="relative flex-1">

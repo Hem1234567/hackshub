@@ -61,7 +61,7 @@ export default function Auth() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background px-4 border-b-4 border-black dark:border-white relative overflow-hidden">
+    <div className="min-h-screen flex items-center justify-center bg-background px-4 pt-16 sm:pt-20 pb-8 border-b-4 border-black dark:border-white relative overflow-hidden">
       {/* Geometric Decor */}
       <div className="absolute top-0 right-0 w-64 h-64 bg-primary border-b-4 border-l-4 border-black dark:border-white z-0 opacity-20" />
       <div className="absolute bottom-0 left-0 w-64 h-64 bg-secondary border-t-4 border-r-4 border-black dark:border-white z-0 opacity-20" />
@@ -80,7 +80,7 @@ export default function Auth() {
           ABORT SEQUENCE
         </Link>
 
-        <div className="bg-white dark:bg-black border-4 border-black dark:border-white p-8 shadow-neo">
+        <div className="bg-white dark:bg-black border-4 border-black dark:border-white p-5 sm:p-8 shadow-neo">
           <div className="text-center mb-8">
             <div className="w-16 h-16 bg-primary border-4 border-black mx-auto mb-6 flex items-center justify-center shadow-neo">
               <span className="text-black font-black text-3xl">H</span>

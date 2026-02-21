@@ -17,6 +17,7 @@ import {
   MessageCircle,
   Image,
   Star,
+  Upload,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -173,12 +174,14 @@ export default function HackathonDetail() {
 
   // User is considered "participating" if they have an application or an approved team membership
   const isParticipating = hasApplied || hasTeamMembership;
+  // Only the hackathon organizer can see the Leaderboard tab
+  const isOrganizer = !!user && hackathon.created_by === user.id;
 
   return (
     <Layout>
       <div className="min-h-screen bg-background pb-12">
         {/* Hero Banner */}
-        <section className="relative h-64 md:h-80 overflow-hidden border-b-4 border-black dark:border-white">
+        <section className="relative h-48 sm:h-64 md:h-80 overflow-hidden border-b-4 border-black dark:border-white">
           {hackathon.banner_url ? (
             <img
               src={hackathon.banner_url}
@@ -217,13 +220,13 @@ export default function HackathonDetail() {
             </Badge>
           </div>
 
-          <div className="absolute bottom-0 left-0 right-0 p-8 bg-gradient-to-t from-black/80 to-transparent">
+          <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-8 bg-gradient-to-t from-black/80 to-transparent">
             <div className="container mx-auto">
-              <h1 className="text-5xl md:text-7xl font-black text-white uppercase mb-2 tracking-tighter drop-shadow-md">
+              <h1 className="text-3xl sm:text-5xl md:text-7xl font-black text-white uppercase mb-1 sm:mb-2 tracking-tighter drop-shadow-md leading-tight">
                 {hackathon.title}
               </h1>
               {hackathon.tagline && (
-                <p className="text-xl md:text-2xl text-white font-mono font-bold bg-black/50 inline-block px-2 border-l-4 border-primary">
+                <p className="text-sm sm:text-xl md:text-2xl text-white font-mono font-bold bg-black/50 inline-block px-2 border-l-4 border-primary line-clamp-2">
                   {hackathon.tagline}
                 </p>
               )}
@@ -232,31 +235,32 @@ export default function HackathonDetail() {
         </section>
 
         {/* Quick Info Bar */}
-        <section className="border-b-4 border-black dark:border-white bg-white dark:bg-black sticky top-16 z-30 shadow-md">
+        <section className="border-b-4 border-black dark:border-white bg-white dark:bg-black sticky top-16 sm:top-20 z-30 shadow-md">
           <div className="container mx-auto px-4">
-            <div className="flex flex-wrap items-center justify-between py-4 gap-6">
-              <div className="flex flex-wrap items-center gap-6 text-sm font-bold uppercase">
+            <div className="flex flex-col sm:flex-row sm:flex-wrap items-start sm:items-center justify-between py-3 sm:py-4 gap-3 sm:gap-4">
+              <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm font-bold uppercase">
                 {hackathon.start_date && (
-                  <span className="flex items-center gap-2 bg-muted/30 px-3 py-1 border-2 border-transparent hover:border-black transition-colors">
-                    <Calendar className="w-5 h-5" />
+                  <span className="flex items-center gap-1 sm:gap-2 bg-muted/30 px-2 sm:px-3 py-1 border-2 border-transparent hover:border-black transition-colors">
+                    <Calendar className="w-4 h-4" />
                     {format(new Date(hackathon.start_date), 'MMM d')}
                     {hackathon.end_date && ` - ${format(new Date(hackathon.end_date), 'MMM d, yyyy')}`}
                   </span>
                 )}
                 {hackathon.location && hackathon.mode !== 'online' && (
-                  <span className="flex items-center gap-2 bg-muted/30 px-3 py-1 border-2 border-transparent hover:border-black transition-colors">
-                    <MapPin className="w-5 h-5" />
-                    {hackathon.location}
+                  <span className="flex items-center gap-1 sm:gap-2 bg-muted/30 px-2 sm:px-3 py-1 border-2 border-transparent hover:border-black transition-colors">
+                    <MapPin className="w-4 h-4" />
+                    <span className="truncate max-w-[100px] sm:max-w-none">{hackathon.location}</span>
                   </span>
                 )}
-                <span className="flex items-center gap-2 bg-muted/30 px-3 py-1 border-2 border-transparent hover:border-black transition-colors">
-                  <Users className="w-5 h-5" />
-                  Team size: {hackathon.min_team_size}-{hackathon.max_team_size}
+                <span className="flex items-center gap-1 sm:gap-2 bg-muted/30 px-2 sm:px-3 py-1 border-2 border-transparent hover:border-black transition-colors">
+                  <Users className="w-4 h-4" />
+                  {hackathon.min_team_size}-{hackathon.max_team_size}
+                  <span className="hidden sm:inline"> members</span>
                 </span>
                 {hackathon.application_deadline && (
-                  <span className="flex items-center gap-2 bg-muted/30 px-3 py-1 border-2 border-transparent hover:border-black transition-colors text-destructive">
-                    <Clock className="w-5 h-5" />
-                    Apply by {format(new Date(hackathon.application_deadline), 'MMM d, yyyy')}
+                  <span className="flex items-center gap-1 sm:gap-2 bg-muted/30 px-2 sm:px-3 py-1 border-2 border-transparent hover:border-black transition-colors text-destructive">
+                    <Clock className="w-4 h-4" />
+                    <span className="hidden sm:inline">Apply by </span>{format(new Date(hackathon.application_deadline), 'MMM d')}
                   </span>
                 )}
               </div>
@@ -278,9 +282,9 @@ export default function HackathonDetail() {
                 ) : (
                   <Button
                     onClick={() => setActiveTab('apply')}
-                    className="bg-primary text-black hover:bg-primary/90 border-4 border-black shadow-neo hover:shadow-none hover:translate-x-[4px] hover:translate-y-[4px] uppercase font-black text-lg px-8 py-6"
+                    className="bg-primary text-black hover:bg-primary/90 border-4 border-black shadow-neo hover:shadow-none hover:translate-x-[2px] sm:hover:translate-x-[4px] hover:translate-y-[2px] sm:hover:translate-y-[4px] uppercase font-black text-sm sm:text-base lg:text-lg px-4 sm:px-6 lg:px-8 py-3 sm:py-4 lg:py-6 w-full sm:w-auto"
                   >
-                    Initialize Application
+                    Apply Now
                   </Button>
                 )
               ) : (
@@ -295,10 +299,10 @@ export default function HackathonDetail() {
         </section>
 
         {/* Main Content */}
-        <section className="py-12 bg-muted/20">
+        <section className="py-8 sm:py-12 bg-muted/20">
           <div className="container mx-auto px-4">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
-              <TabsList className="bg-white dark:bg-black border-4 border-black p-2 h-auto flex-wrap justify-start gap-2 rounded-none shadow-neo">
+              <TabsList className="bg-white dark:bg-black border-4 border-black p-2 h-auto flex-nowrap overflow-x-auto justify-start gap-2 rounded-none shadow-neo scrollbar-hide w-full">
                 <TabsTrigger value="overview" className="border-2 border-transparent data-[state=active]:border-black data-[state=active]:bg-primary data-[state=active]:text-black font-bold uppercase rounded-none transition-all">Overview</TabsTrigger>
                 <TabsTrigger value="prizes" className="border-2 border-transparent data-[state=active]:border-black data-[state=active]:bg-primary data-[state=active]:text-black font-bold uppercase rounded-none transition-all">Prizes</TabsTrigger>
                 <TabsTrigger value="participants" className="border-2 border-transparent data-[state=active]:border-black data-[state=active]:bg-primary data-[state=active]:text-black font-bold uppercase rounded-none transition-all">
@@ -311,19 +315,16 @@ export default function HackathonDetail() {
                     Gallery
                   </TabsTrigger>
                 )}
-                <Link to={`/hackathon/${id}/leaderboard`}>
-                  <Button variant="ghost" className="border-2 border-transparent font-bold uppercase rounded-none transition-all hover:bg-muted/50 h-full">
-                    <Trophy className="w-4 h-4 mr-2" />
-                    Leaderboard
-                  </Button>
-                </Link>
+                {isOrganizer && (
+                  <Link to={`/hackathon/${id}/leaderboard`}>
+                    <Button variant="ghost" className="border-2 border-transparent font-bold uppercase rounded-none transition-all hover:bg-muted/50 h-full">
+                      <Trophy className="w-4 h-4 mr-2" />
+                      Leaderboard
+                    </Button>
+                  </Link>
+                )}
                 {user && !isParticipating && !isDeadlinePassed && (
                   <TabsTrigger value="apply" className="border-2 border-transparent data-[state=active]:border-black data-[state=active]:bg-primary data-[state=active]:text-black font-bold uppercase rounded-none transition-all">Apply</TabsTrigger>
-                )}
-                {user && isParticipating && (
-                  <TabsTrigger value="apply" className="border-2 border-transparent data-[state=active]:border-black data-[state=active]:bg-primary data-[state=active]:text-black font-bold uppercase rounded-none transition-all">
-                    {hasTeamMembership && !hasApplied ? 'Status' : 'My Unit'}
-                  </TabsTrigger>
                 )}
                 {user && hasApplied && (
                   <TabsTrigger value="team" className="border-2 border-transparent data-[state=active]:border-black data-[state=active]:bg-primary data-[state=active]:text-black font-bold uppercase rounded-none transition-all">My Unit</TabsTrigger>
@@ -334,6 +335,12 @@ export default function HackathonDetail() {
                     Comms
                   </TabsTrigger>
                 )}
+                {user && isAccepted && (
+                  <TabsTrigger value="submit" className="border-2 border-transparent data-[state=active]:border-black data-[state=active]:bg-primary data-[state=active]:text-black font-bold uppercase rounded-none transition-all">
+                    <Upload className="w-4 h-4 mr-2" />
+                    Submit Project
+                  </TabsTrigger>
+                )}
                 {user && isJudge && (
                   <TabsTrigger value="judging" className="border-2 border-transparent data-[state=active]:border-black data-[state=active]:bg-primary data-[state=active]:text-black font-bold uppercase rounded-none transition-all">
                     <Star className="w-4 h-4 mr-2" />
@@ -342,8 +349,8 @@ export default function HackathonDetail() {
                 )}
               </TabsList>
 
-              <div className="grid lg:grid-cols-3 gap-8">
-                <div className="lg:col-span-2 space-y-8">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
+                <div className="lg:col-span-2 space-y-6 sm:space-y-8 order-2 lg:order-1">
                   <TabsContent value="overview" className="mt-0">
                     <motion.div
                       initial={{ opacity: 0, y: 20 }}
@@ -498,6 +505,22 @@ export default function HackathonDetail() {
                     {teamId && <TeamChat teamId={teamId} />}
                   </TabsContent>
 
+                  {user && isAccepted && (
+                    <TabsContent value="submit" className="mt-0">
+                      <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="bg-white dark:bg-black border-4 border-black dark:border-white p-8 shadow-neo"
+                      >
+                        <h2 className="text-3xl font-black uppercase mb-6 flex items-center gap-3">
+                          <Upload className="w-8 h-8" />
+                          Submit Project
+                        </h2>
+                        <ProjectSubmissionForm hackathonId={id!} teamId={teamId} />
+                      </motion.div>
+                    </TabsContent>
+                  )}
+
                   {user && isJudge && (
                     <TabsContent value="judging" className="mt-0">
                       <JuryDashboard hackathonId={id!} />
@@ -506,7 +529,7 @@ export default function HackathonDetail() {
                 </div>
 
                 {/* Sidebar */}
-                <div className="space-y-6">
+                <div className="space-y-6 order-1 lg:order-2">
                   {/* Quick Stats */}
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}

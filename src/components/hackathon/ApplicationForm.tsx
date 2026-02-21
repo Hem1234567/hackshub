@@ -2,10 +2,10 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
-import { useForm, useFieldArray } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Trash2, Users, Loader2, UserPlus, Crown, ArrowLeft } from 'lucide-react';
+import { Users, Loader2, Crown, ArrowLeft } from 'lucide-react';
 import { TeamStatusCard } from './TeamStatusCard';
 import { PresentationUpload } from './PresentationUpload';
 import { Button } from '@/components/ui/button';
@@ -31,9 +31,6 @@ const applicationSchema = z.object({
   abstract: z.string().optional(),
   whyJoin: z.string().min(10, 'Tell us why you want to participate'),
   domain: z.string().min(1, 'Please select a domain'),
-  teamMembers: z.array(z.object({
-    email: z.string().email('Invalid email address'),
-  })).optional(),
 });
 
 const DOMAIN_OPTIONS = [
@@ -113,7 +110,6 @@ export function ApplicationForm({ hackathonId, hackathon }: ApplicationFormProps
 
   const {
     register,
-    control,
     handleSubmit,
     formState: { errors },
     setValue,
@@ -126,16 +122,8 @@ export function ApplicationForm({ hackathonId, hackathon }: ApplicationFormProps
       abstract: '',
       whyJoin: '',
       domain: '',
-      teamMembers: [],
     },
   });
-
-  const { fields, append, remove } = useFieldArray({
-    control,
-    name: 'teamMembers',
-  });
-
-  const maxAdditionalMembers = (hackathon.max_team_size || 4) - 1;
 
   const submitMutation = useMutation({
     mutationFn: async (data: ApplicationFormData) => {
@@ -162,21 +150,6 @@ export function ApplicationForm({ hackathonId, hackathon }: ApplicationFormProps
         });
 
       if (leaderError) throw leaderError;
-
-      if (data.teamMembers && data.teamMembers.length > 0) {
-        const membersToInsert = data.teamMembers.map((member) => ({
-          team_id: team.id,
-          email: member.email,
-          role: 'member' as const,
-          accepted: false,
-        }));
-
-        const { error: membersError } = await supabase
-          .from('team_members')
-          .insert(membersToInsert);
-
-        if (membersError) throw membersError;
-      }
 
       const { error: appError } = await supabase
         .from('applications')
@@ -222,8 +195,16 @@ export function ApplicationForm({ hackathonId, hackathon }: ApplicationFormProps
         title: 'Application submitted!',
         description: 'Your team has been registered for this hackathon.',
       });
-      queryClient.invalidateQueries({ queryKey: ['user-application'] });
-      queryClient.invalidateQueries({ queryKey: ['my-applications'] });
+      // Force refetch ALL related queries immediately so the parent page
+      // re-renders with the updated application status without needing a
+      // back-and-forward navigation (navigating to the same route doesn't
+      // remount the component, so without refetchType:'all' the stale query
+      // data is shown until the user leaves and returns).
+      queryClient.invalidateQueries({ queryKey: ['user-application'], refetchType: 'all' });
+      queryClient.invalidateQueries({ queryKey: ['my-applications'], refetchType: 'all' });
+      queryClient.invalidateQueries({ queryKey: ['user-existing-application'], refetchType: 'all' });
+      queryClient.invalidateQueries({ queryKey: ['user-team-membership'], refetchType: 'all' });
+      queryClient.invalidateQueries({ queryKey: ['user-team-membership-apply'], refetchType: 'all' });
       navigate(`/hackathon/${hackathonId}`);
     },
     onError: (error: any) => {
@@ -256,10 +237,10 @@ export function ApplicationForm({ hackathonId, hackathon }: ApplicationFormProps
   // If user already has an application for this hackathon
   if (existingApplication) {
     const statusLabel = existingApplication.status === 'submitted' ? 'pending review' :
-                        existingApplication.status === 'accepted' ? 'accepted' :
-                        existingApplication.status === 'rejected' ? 'not accepted' :
-                        existingApplication.status === 'waitlisted' ? 'waitlisted' : 'submitted';
-    
+      existingApplication.status === 'accepted' ? 'accepted' :
+        existingApplication.status === 'rejected' ? 'not accepted' :
+          existingApplication.status === 'waitlisted' ? 'waitlisted' : 'submitted';
+
     return (
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -271,7 +252,7 @@ export function ApplicationForm({ hackathonId, hackathon }: ApplicationFormProps
         </div>
         <h2 className="text-2xl font-heading font-bold mb-2">Already Applied</h2>
         <p className="text-muted-foreground mb-4">
-          You have already submitted an application for {hackathon.title}. 
+          You have already submitted an application for {hackathon.title}.
           Your application is currently <span className="font-medium text-primary">{statusLabel}</span>.
         </p>
         <Link to={`/hackathon/${hackathonId}`}>
@@ -292,7 +273,7 @@ export function ApplicationForm({ hackathonId, hackathon }: ApplicationFormProps
     const isLeader = existingTeamMembership.role === 'leader';
 
     return (
-      <TeamStatusCard 
+      <TeamStatusCard
         team={team}
         isApproved={isApproved}
         isPending={isPending}
@@ -309,7 +290,7 @@ export function ApplicationForm({ hackathonId, hackathon }: ApplicationFormProps
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="glass-card p-8"
+          className="glass-card p-5 sm:p-8"
         >
           <h2 className="text-2xl font-heading font-bold mb-2">Join {hackathon.title}</h2>
           <p className="text-muted-foreground mb-8">
@@ -398,63 +379,19 @@ export function ApplicationForm({ hackathonId, hackathon }: ApplicationFormProps
           )}
         </div>
 
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <Label>Team Members</Label>
-            <span className="text-sm text-muted-foreground">
-              {fields.length + 1} / {hackathon.max_team_size} members
-            </span>
-          </div>
-
-          <div className="p-4 rounded-lg bg-primary/10 border border-primary/30">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-gradient-primary flex items-center justify-center">
-                <Users className="w-5 h-5 text-primary-foreground" />
-              </div>
-              <div>
-                <p className="font-medium">{profile?.full_name || 'You'}</p>
-                <p className="text-sm text-muted-foreground">{user?.email} (Team Leader)</p>
-              </div>
+        <div className="p-4 rounded-lg bg-primary/10 border border-primary/30">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-gradient-primary flex items-center justify-center">
+              <Users className="w-5 h-5 text-primary-foreground" />
+            </div>
+            <div>
+              <p className="font-medium">{profile?.full_name || 'You'}</p>
+              <p className="text-sm text-muted-foreground">{user?.email} (Team Leader)</p>
             </div>
           </div>
-
-          {fields.map((field, index) => (
-            <div key={field.id} className="flex items-center gap-2">
-              <div className="flex-1">
-                <Input
-                  placeholder="team-member@email.com"
-                  {...register(`teamMembers.${index}.email`)}
-                  className="bg-muted/50 border-border"
-                />
-                {errors.teamMembers?.[index]?.email && (
-                  <p className="text-sm text-destructive mt-1">
-                    {errors.teamMembers[index]?.email?.message}
-                  </p>
-                )}
-              </div>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                onClick={() => remove(index)}
-                className="text-destructive hover:text-destructive"
-              >
-                <Trash2 className="w-4 h-4" />
-              </Button>
-            </div>
-          ))}
-
-          {fields.length < maxAdditionalMembers && (
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => append({ email: '' })}
-              className="w-full"
-            >
-              <UserPlus className="w-4 h-4 mr-2" />
-              Invite Team Member
-            </Button>
-          )}
+          <p className="text-xs text-muted-foreground mt-3 ml-1">
+            You can invite team members after submitting your application from the <strong>My Unit</strong> tab.
+          </p>
         </div>
 
         <div className="space-y-2">
@@ -518,7 +455,7 @@ export function ApplicationForm({ hackathonId, hackathon }: ApplicationFormProps
           )}
         </div>
 
-        <PresentationUpload 
+        <PresentationUpload
           onUploadComplete={setPresentationUrl}
           existingUrl={presentationUrl}
         />
