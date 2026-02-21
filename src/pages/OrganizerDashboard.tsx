@@ -3,6 +3,8 @@ import { useParams, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import type { RealtimeChannel } from '@supabase/supabase-js';
 import { motion } from 'framer-motion';
+import emailjs from '@emailjs/browser';
+import QRCode from 'qrcode';
 import { format } from 'date-fns';
 import {
   ArrowLeft,
@@ -199,35 +201,110 @@ export default function OrganizerDashboard() {
   });
 
   const updateApplicationMutation = useMutation({
-    mutationFn: async ({ appId, status }: { appId: string; status: ApplicationStatus }) => {
+    mutationFn: async ({ appId, status, app }: { appId: string; status: ApplicationStatus; app?: any }) => {
+      // ── Step 1: update application status ──────────────────────────────────
       const { error } = await supabase
         .from('applications')
         .update({ status })
         .eq('id', appId);
-
       if (error) throw error;
 
-      // Send notification email for accept/reject/waitlist
-      if ((status === 'accepted' || status === 'rejected' || status === 'waitlisted') && hackathon) {
+      // ── Step 2: on ACCEPT → generate team code + QR + send email ──────────
+      if (status === 'accepted' && hackathon && app) {
         try {
-          const { data: sessionData } = await supabase.auth.getSession();
-          const { error: funcError } = await supabase.functions.invoke('send-application-notification', {
-            body: {
-              applicationId: appId,
-              status,
-              hackathonTitle: hackathon.title,
-            },
-            headers: {
-              Authorization: `Bearer ${sessionData.session?.access_token}`,
-            },
+          // Generate a short unique team code
+          const teamSlug = (app.team?.team_name || 'TEAM')
+            .toUpperCase()
+            .replace(/[^A-Z0-9]/g, '')
+            .slice(0, 4)
+            .padEnd(4, 'X');
+          const randomPart = Math.random().toString(36).substring(2, 8).toUpperCase();
+          const teamCode = `HACK-${teamSlug}-${randomPart}`;
+
+          // Generate QR as a data URL (base64 PNG)
+          const qrDataUrl = await QRCode.toDataURL(teamCode, {
+            width: 400,
+            margin: 2,
+            color: { dark: '#000000', light: '#FFFFFF' },
           });
 
-          if (funcError) {
-            throw new Error(`Edge Function Error: ${funcError.message}`);
+          // Patch team_code + qr_code_data_url into application_data
+          const existingData = app.application_data || {};
+          const { error: updateErr } = await supabase
+            .from('applications')
+            .update({
+              application_data: {
+                ...existingData,
+                team_code: teamCode,
+                qr_code_data_url: qrDataUrl,
+              },
+            })
+            .eq('id', appId);
+          if (updateErr) throw updateErr;
+
+          // Fetch team leader email (role = 'leader' in team_members)
+          let leaderEmail = app.profile?.email || null;
+          if (app.team?.id) {
+            const { data: leaderData } = await supabase
+              .from('team_members')
+              .select('email')
+              .eq('team_id', app.team.id)
+              .eq('role', 'leader')
+              .maybeSingle();
+            if (leaderData?.email) leaderEmail = leaderData.email;
           }
+
+          if (leaderEmail) {
+            // Format event date and venue from hackathon record
+            const eventDate = hackathon.start_date
+              ? new Date(hackathon.start_date).toLocaleDateString('en-IN', {
+                day: 'numeric', month: 'long', year: 'numeric',
+              })
+              : 'To be announced';
+            const eventVenue = hackathon.location || 'To be announced';
+
+            await emailjs.send(
+              'service_a5gdqrm',
+              'template_8p5r9le',
+              {
+                team_name: app.team?.team_name || 'Your Team',
+                team_code: teamCode,
+                qr_code: qrDataUrl,
+                event_date: eventDate,
+                event_venue: eventVenue,
+                to_email: leaderEmail,
+              },
+              'vHAZeFhpoFUmfTnz3'
+            );
+          }
+
+          toast({
+            title: '✅ Team Authorized!',
+            description: `Team code ${teamCode} generated and emailed to the leader.`,
+            duration: 5000,
+          });
+        } catch (qrError: any) {
+          console.error('QR/Email error:', qrError);
+          toast({
+            title: 'QR / Email Failed',
+            description: `Application accepted but: ${qrError.message || 'Unknown error'}`,
+            variant: 'destructive',
+            duration: 6000,
+          });
+        }
+        return; // skip edge function for accepted
+      }
+
+      // ── Step 3: reject / waitlist → existing edge-function notification ────
+      if ((status === 'rejected' || status === 'waitlisted') && hackathon) {
+        try {
+          const { data: sessionData } = await supabase.auth.getSession();
+          await supabase.functions.invoke('send-application-notification', {
+            body: { applicationId: appId, status, hackathonTitle: hackathon.title },
+            headers: { Authorization: `Bearer ${sessionData.session?.access_token}` },
+          });
         } catch (notifyError: any) {
           console.error('Failed to send notification:', notifyError);
-          // Show a separate toast for email failure so the user knows
           toast({
             title: 'Email Notification Failed',
             description: `Status updated, but email failed: ${notifyError.message || 'Unknown error'}`,
@@ -237,9 +314,11 @@ export default function OrganizerDashboard() {
         }
       }
     },
-    onSuccess: () => {
+    onSuccess: (_, vars) => {
       queryClient.invalidateQueries({ queryKey: ['hackathon-applications'] });
-      toast({ title: 'Application updated', description: 'The application status has been changed.' });
+      if (vars.status !== 'accepted') {
+        toast({ title: 'Application updated', description: 'The application status has been changed.' });
+      }
     },
     onError: (error: any) => {
       toast({ title: 'Update failed', description: error.message, variant: 'destructive' });
@@ -579,7 +658,7 @@ export default function OrganizerDashboard() {
                                     <Button
                                       size="sm"
                                       onClick={() =>
-                                        updateApplicationMutation.mutate({ appId: app.id, status: 'accepted' })
+                                        updateApplicationMutation.mutate({ appId: app.id, status: 'accepted', app })
                                       }
                                       disabled={updateApplicationMutation.isPending}
                                       className="bg-green-400 text-black border-2 border-black hover:bg-green-500 font-bold uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[1px] hover:translate-y-[1px]"
@@ -593,7 +672,7 @@ export default function OrganizerDashboard() {
                                       size="sm"
                                       variant="outline"
                                       onClick={() =>
-                                        updateApplicationMutation.mutate({ appId: app.id, status: 'waitlisted' })
+                                        updateApplicationMutation.mutate({ appId: app.id, status: 'waitlisted', app })
                                       }
                                       disabled={updateApplicationMutation.isPending}
                                       className="bg-yellow-400 text-black border-2 border-black hover:bg-yellow-500 font-bold uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[1px] hover:translate-y-[1px]"
@@ -607,7 +686,7 @@ export default function OrganizerDashboard() {
                                       size="sm"
                                       variant="outline"
                                       onClick={() =>
-                                        updateApplicationMutation.mutate({ appId: app.id, status: 'rejected' })
+                                        updateApplicationMutation.mutate({ appId: app.id, status: 'rejected', app })
                                       }
                                       disabled={updateApplicationMutation.isPending}
                                       className="bg-red-400 text-black border-2 border-black hover:bg-red-500 font-bold uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[1px] hover:translate-y-[1px]"

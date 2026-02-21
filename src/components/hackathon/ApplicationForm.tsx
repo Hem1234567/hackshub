@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Users, Loader2, Crown, ArrowLeft } from 'lucide-react';
+import { Users, Loader2, Crown, ArrowLeft, UserPlus } from 'lucide-react';
 import { TeamStatusCard } from './TeamStatusCard';
 import { PresentationUpload } from './PresentationUpload';
 import { Button } from '@/components/ui/button';

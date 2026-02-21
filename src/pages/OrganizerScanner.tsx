@@ -22,46 +22,17 @@ const OrganizerScanner = () => {
     const [manualCode, setManualCode] = useState("");
     const scannerRef = useRef<Html5Qrcode | null>(null);
 
+    const hasScanned = useRef(false);
+
     // Function to handle successful scan
     const onScanSuccess = (decodedText: string, decodedResult: any) => {
+        if (hasScanned.current) return; // prevent duplicate fires
+        hasScanned.current = true;
         console.log("Scanned text:", decodedText);
-        let foundId = null;
-
-        try {
-            // Try parsing as JSON first (New format from email)
-            const json = JSON.parse(decodedText);
-            if (json.teamId) {
-                foundId = json.teamId;
-            }
-        } catch (e) {
-            // Not JSON, continue to regex check
-        }
-
-        if (!foundId) {
-            // UUID Regex (Old format)
-            const uuidRegex = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
-            const match = decodedText.match(uuidRegex);
-
-            // Simple alphanumeric check for short IDs (8 chars)
-            const shortIdRegex = /^[A-Z0-9]{8}$/i;
-            const shortMatch = decodedText.trim().match(shortIdRegex);
-
-            if (match) {
-                foundId = match[0];
-            } else if (shortMatch) {
-                foundId = decodedText.trim();
-            } else if (decodedText.length > 5 && decodedText.length < 50) {
-                // Fallback: If it's a valid looking string, just try it.
-                foundId = decodedText;
-            }
-        }
-
-        if (foundId) {
-            setScannedData(foundId);
+        const trimmed = decodedText.trim();
+        if (trimmed.length > 0) {
+            setScannedData(trimmed);
             stopScanner();
-        } else {
-            // Optional: Show toast for invalid QR but keep scanning?
-            console.log("Invalid QR format:", decodedText);
         }
     };
 
@@ -156,15 +127,60 @@ const OrganizerScanner = () => {
         queryFn: async () => {
             if (!scannedData) return null;
 
-            // Try finding by ID (UUID) OR team_unique_id
+            // ── NEW: look up by team_code stored in application_data ──────────
+            const teamCodePattern = /^HACK-[A-Z0-9]{4}-[A-Z0-9]{6}$/i;
+            if (teamCodePattern.test(scannedData)) {
+                const upperCode = scannedData.toUpperCase();
+
+                // Use JSONB containment (@>) — most reliable approach
+                const { data: matchedApps, error: appErr } = await supabase
+                    .from('applications')
+                    .select('id, status, application_data, team_id, team:teams(id, team_name, team_unique_id, hackathon_id, hackathon:hackathons(title))')
+                    .eq('hackathon_id', id)
+                    .contains('application_data', { team_code: upperCode });
+
+                if (appErr) throw new Error(`DB error: ${appErr.message}`);
+
+                // Fallback: client-side search in case contains() misses
+                let matchedApp = matchedApps?.[0];
+                if (!matchedApp) {
+                    // Fetch all and do client-side search
+                    const { data: allApps } = await supabase
+                        .from('applications')
+                        .select('id, status, application_data, team_id, team:teams(id, team_name, team_unique_id, hackathon_id, hackathon:hackathons(title))')
+                        .eq('hackathon_id', id);
+                    matchedApp = allApps?.find(
+                        (a: any) => String((a.application_data as any)?.team_code ?? '').toUpperCase() === upperCode
+                    );
+                }
+
+                if (!matchedApp) throw new Error(`No team found for QR code: ${upperCode}`);
+
+                const team = matchedApp.team;
+                if (!team) throw new Error('Team data missing — check hackathon_id in URL');
+
+                const { data: members } = await supabase
+                    .from('team_members')
+                    .select('*, profile:profiles(*)')
+                    .eq('team_id', team.id);
+
+                const { data: project } = await supabase
+                    .from('projects')
+                    .select('*')
+                    .eq('team_id', team.id)
+                    .maybeSingle();
+
+                if (project) setProjectId(project.id);
+                return { team, members: members || [], project: project || null, application: matchedApp };
+            }
+
+            // ── LEGACY: look up by UUID or team_unique_id ─────────────────────
             let teamQuery = supabase
                 .from("teams")
                 .select("*, hackathon:hackathons(title)")
-                .eq("hackathon_id", id); // Ensure it belongs to this hackathon
+                .eq("hackathon_id", id);
 
-            // Check if UUID
             const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(scannedData);
-
             if (isUuid) {
                 teamQuery = teamQuery.eq("id", scannedData);
             } else {
@@ -172,42 +188,29 @@ const OrganizerScanner = () => {
             }
 
             const { data: teams, error: teamError } = await teamQuery;
-
             if (teamError) throw teamError;
             const team = teams?.[0];
+            if (!team) throw new Error("Team not found in this hackathon");
 
-            if (!team) {
-                throw new Error("Team not found in this hackathon");
-            }
-
-            // Fetch members
-            const { data: members, error: membersError } = await supabase
+            const { data: members } = await supabase
                 .from("team_members")
                 .select("*, profile:profiles(*)")
                 .eq("team_id", team.id);
 
-            if (membersError) throw membersError;
-
-            // Fetch application to get check-in status
-            const { data: application, error: appError } = await supabase
+            const { data: application } = await supabase
                 .from("applications")
                 .select("*")
                 .eq("team_id", team.id)
                 .maybeSingle();
 
-            if (appError) throw appError;
-
-            // Fetch project
-            const { data: project, error: projectError } = await supabase
+            const { data: project } = await supabase
                 .from("projects")
                 .select("*")
                 .eq("team_id", team.id)
                 .maybeSingle();
 
-            if (projectError) throw projectError;
             if (project) setProjectId(project.id);
-
-            return { team, members, project, application };
+            return { team, members: members || [], project: project || null, application };
         },
         enabled: !!scannedData && !!id,
         retry: 1
@@ -334,9 +337,9 @@ const OrganizerScanner = () => {
                                 <div className="flex gap-2">
                                     <input
                                         type="text"
-                                        placeholder="ENTER TEAM ID MANUALLY"
+                                        placeholder="ENTER TEAM CODE (e.g. HACK-TEAM-AB12CD)"
                                         value={manualCode}
-                                        onChange={(e) => setManualCode(e.target.value)}
+                                        onChange={(e) => setManualCode(e.target.value.toUpperCase())}
                                         className="flex-1 h-12 px-4 border-2 border-black bg-white dark:bg-black font-mono uppercase"
                                     />
                                     <Button
@@ -490,7 +493,10 @@ const OrganizerScanner = () => {
                                 <div className="text-center p-8 bg-red-100 border-4 border-red-500">
                                     <p className="font-black text-red-600">ERROR LOADING TEAM DETAILS</p>
                                     <p className="font-mono text-sm mt-2 text-red-500">
-                                        ID: {scannedData}
+                                        CODE: {scannedData}
+                                    </p>
+                                    <p className="font-mono text-xs mt-1 text-red-400 break-all px-2">
+                                        {(teamDetails as any)?.message || 'Unknown error — check console for details'}
                                     </p>
                                     <Button onClick={handleReset} variant="outline" className="mt-4 border-2 border-red-600 text-red-600 hover:bg-red-50">
                                         TRY AGAIN
