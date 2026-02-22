@@ -57,7 +57,7 @@ const handler = async (req: Request): Promise<Response> => {
     // Fetch application
     const { data: application, error: appError } = await supabaseAdmin
       .from("applications")
-      .select("id, user_id, hackathon_id, team_id")
+      .select("id, user_id, hackathon_id, team_id, teams(team_name)")
       .eq("id", applicationId)
       .maybeSingle();
 
@@ -86,7 +86,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Fetch ALL team members (not just the leader)
     let allMembers: { email: string; full_name: string; user_id: string | null }[] = [];
-    
+
     if (application.team_id) {
       const { data: teamMembers } = await supabaseAdmin
         .from("team_members")
@@ -120,7 +120,7 @@ const handler = async (req: Request): Promise<Response> => {
         .select("email, full_name")
         .eq("user_id", application.user_id)
         .maybeSingle();
-      
+
       allMembers = [{
         email: profile?.email || "",
         full_name: profile?.full_name || "Participant",
@@ -129,17 +129,17 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     // Create in-app notifications for ALL members
-    const notificationTitle = isAccepted 
-      ? "Application Accepted! 🎉" 
-      : isWaitlisted 
-      ? "You're on the Waitlist 📋" 
-      : "Application Update";
-    
+    const notificationTitle = isAccepted
+      ? "Application Accepted! 🎉"
+      : isWaitlisted
+        ? "You're on the Waitlist 📋"
+        : "Application Update";
+
     const notificationMessage = isAccepted
       ? `Your application to ${hackathonTitle} has been accepted! Team ID: ${teamUniqueId}`
       : isWaitlisted
-      ? `You've been added to the waitlist for ${hackathonTitle}. We'll notify you if a spot opens up.`
-      : `Your application to ${hackathonTitle} was not selected.`;
+        ? `You've been added to the waitlist for ${hackathonTitle}. We'll notify you if a spot opens up.`
+        : `Your application to ${hackathonTitle} was not selected.`;
 
     // Insert notifications for all team members
     const notifications = allMembers
@@ -161,73 +161,67 @@ const handler = async (req: Request): Promise<Response> => {
       await supabaseAdmin.from("notifications").insert(notifications);
     }
 
-    // Send emails to ALL team members
+    // 4. Send email notifications
     const resendApiKey = Deno.env.get("RESEND_API_KEY");
     let emailsSent = 0;
+    const teamName = (application as any).teams?.team_name || "Your Team";
 
-    if (resendApiKey) {
+    if (status === "rejected") {
+      // Use EmailJS REST API for rejections
+      for (const member of allMembers) {
+        if (!member.email) continue;
+        try {
+          const emailJsResponse = await fetch("https://api.emailjs.com/api/v1.0/email/send", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              service_id: "service_a5gdqrm",
+              template_id: "template_eifp6kd",
+              user_id: "vHAZeFhpoFUmfTnz3",
+              template_params: {
+                team_name: teamName,
+                to_email: member.email,
+                name: member.full_name || "Participant",
+                email: member.email,
+              },
+            }),
+          });
+          if (emailJsResponse.ok) {
+            console.log(`[Edge Function] EmailJS rejection sent to ${member.email}`);
+            emailsSent++;
+          } else {
+            const errText = await emailJsResponse.text();
+            console.error(`[Edge Function] EmailJS error for ${member.email}:`, errText);
+          }
+        } catch (e) {
+          console.error(`[Edge Function] EmailJS fetch failed for ${member.email}:`, e);
+        }
+      }
+    } else if (resendApiKey && isWaitlisted) {
+      // Use Resend for waitlisted
       const siteUrl = Deno.env.get("SITE_URL") || "https://hackathon-hub.lovable.app";
-      
+
       for (const member of allMembers) {
         if (!member.email) continue;
 
-        let subject: string;
-        let htmlContent: string;
-        const userName = member.full_name;
-
-        if (isAccepted) {
-          const qrData = JSON.stringify({ teamId: teamUniqueId, hackathon: hackathonTitle });
-          const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(qrData)}`;
-          
-          subject = `🎉 Congratulations! You've been accepted to ${hackathonTitle}`;
-          htmlContent = `
-            <div style="font-family: system-ui, -apple-system, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-              <h1 style="color: #00d4ff; margin-bottom: 20px;">🎉 Congratulations, ${userName}!</h1>
-              <p style="font-size: 16px; color: #333; line-height: 1.6;">
-                Great news! Your team's application to <strong>${hackathonTitle}</strong> has been <span style="color: #22c55e; font-weight: bold;">accepted</span>!
-              </p>
-              <div style="background: #f0f9ff; padding: 20px; border-radius: 10px; margin: 20px 0; text-align: center;">
-                <p style="font-size: 14px; color: #666; margin-bottom: 10px;">Your Team ID</p>
-                <p style="font-size: 24px; font-weight: bold; color: #00d4ff; letter-spacing: 3px;">${teamUniqueId}</p>
-              </div>
-              <div style="text-align: center; margin: 20px 0;">
-                <p style="font-size: 14px; color: #666; margin-bottom: 10px;">Show this QR code at check-in:</p>
-                <img src="${qrCodeUrl}" alt="Team QR Code" style="border-radius: 10px;" />
-              </div>
-              <div style="margin-top: 30px; text-align: center;">
-                <a href="${siteUrl}/dashboard" 
-                   style="background: linear-gradient(135deg, #00d4ff, #8b5cf6); color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: bold;">
-                  Go to Dashboard
-                </a>
-              </div>
+        const subject = `Update on your ${hackathonTitle} application`;
+        const htmlContent = `
+          <div style="font-family: system-ui, -apple-system, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+            <h1 style="color: #333; margin-bottom: 20px;">Hello, ${member.full_name}</h1>
+            <p style="font-size: 16px; color: #333; line-height: 1.6;">
+              Thank you for applying to <strong>${hackathonTitle}</strong>.
+            </p>
+            <p style="font-size: 16px; color: #333; line-height: 1.6;">
+              You've been added to the waitlist. We'll notify you if a spot opens up!
+            </p>
+            <div style="margin-top: 30px; text-align: center;">
+              <a href="${siteUrl}/hackathons" 
+                 style="background: #6b7280; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: bold;">
+                Explore Other Hackathons
+              </a>
             </div>
-          `;
-        } else if (status === "rejected") {
-          subject = `Update on your ${hackathonTitle} application`;
-          htmlContent = `
-            <div style="font-family: system-ui, -apple-system, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-              <h1 style="color: #333; margin-bottom: 20px;">Hello, ${userName}</h1>
-              <p style="font-size: 16px; color: #333; line-height: 1.6;">
-                Thank you for applying to <strong>${hackathonTitle}</strong>.
-              </p>
-              <p style="font-size: 16px; color: #333; line-height: 1.6;">
-                After careful consideration, we regret to inform you that your application was not selected this time.
-              </p>
-              <p style="font-size: 16px; color: #333; line-height: 1.6;">
-                Don't give up! There are many other exciting hackathons to explore.
-              </p>
-              <div style="margin-top: 30px; text-align: center;">
-                <a href="${siteUrl}/hackathons" 
-                   style="background: #6b7280; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: bold;">
-                  Explore Other Hackathons
-                </a>
-              </div>
-            </div>
-          `;
-        } else {
-          // Waitlisted - no email sent
-          continue;
-        }
+          </div>
+        `;
 
         try {
           await fetch("https://api.resend.com/emails", {
@@ -251,8 +245,8 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     return new Response(
-      JSON.stringify({ 
-        success: true, 
+      JSON.stringify({
+        success: true,
         notification: true,
         emailsSent,
       }),

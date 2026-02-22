@@ -202,17 +202,25 @@ export default function OrganizerDashboard() {
 
   const updateApplicationMutation = useMutation({
     mutationFn: async ({ appId, status, app }: { appId: string; status: ApplicationStatus; app?: any }) => {
-      // ── Step 1: update application status ──────────────────────────────────
-      const { error } = await supabase
+      console.log(`[Mutation] Updating application ${appId} to status: ${status}`, { app });
+
+      // ── Step 1: PRIMARY STATUS UPDATE ──────────────────────────────────────
+      const { error: statusUpdateError } = await supabase
         .from('applications')
         .update({ status })
         .eq('id', appId);
-      if (error) throw error;
+
+      if (statusUpdateError) {
+        console.error('[Mutation] Status update failed:', statusUpdateError);
+        throw statusUpdateError;
+      }
+
+      console.log(`[Mutation] Status updated successfully to: ${status}`);
 
       // ── Step 2: on ACCEPT → generate team code + QR + send email ──────────
       if (status === 'accepted' && hackathon && app) {
         try {
-          // Generate a short unique team code
+          // 2.1 Generate a short unique team code
           const teamSlug = (app.team?.team_name || 'TEAM')
             .toUpperCase()
             .replace(/[^A-Z0-9]/g, '')
@@ -295,8 +303,81 @@ export default function OrganizerDashboard() {
         return; // skip edge function for accepted
       }
 
-      // ── Step 3: reject / waitlist → existing edge-function notification ────
-      if ((status === 'rejected' || status === 'waitlisted') && hackathon) {
+      // ── Step 3: on REJECT → send EmailJS rejection email ──────────────────
+      if (status === 'rejected' && hackathon && app) {
+        console.log('[Mutation] Entering rejection flow...');
+        try {
+          // 3.1 Fetch Team Leader Destination (Robust Multi-Source Lookup)
+          let leaderEmail: string | null = null;
+          let leaderName: string = 'Team Leader';
+
+          if (app.team?.id) {
+            const { data: leaderData } = await supabase
+              .from('team_members')
+              .select('email')
+              .eq('team_id', app.team.id)
+              .eq('role', 'leader')
+              .maybeSingle();
+            if (leaderData?.email) leaderEmail = leaderData.email;
+          }
+
+          if (!leaderEmail && app.user_id) {
+            const { data: profileData } = await supabase
+              .from('profiles')
+              .select('email, full_name')
+              .eq('user_id', app.user_id)
+              .maybeSingle();
+            if (profileData?.email) {
+              leaderEmail = profileData.email;
+              leaderName = profileData.full_name || leaderName;
+            }
+          }
+
+          if (!leaderEmail) {
+            leaderEmail = app.profile?.email || null;
+            leaderName = app.profile?.full_name || leaderName;
+          }
+
+          // 3.2 Dispatch Rejection Email via EmailJS
+          if (leaderEmail) {
+            await emailjs.send(
+              'service_a5gdqrm',
+              'template_eifp6kd',
+              {
+                team_name: app.team?.team_name || 'Your Team',
+                hackathon_name: hackathon.title,
+                to_email: leaderEmail,
+                to_name: leaderName,
+                name: leaderName,
+                email: leaderEmail,
+              },
+              'vHAZeFhpoFUmfTnz3'
+            );
+
+            toast({
+              title: '❌ Application Rejected',
+              description: `Rejection email sent to leader: ${leaderEmail}`,
+              duration: 5000,
+            });
+          } else {
+            toast({
+              title: '❌ Application Rejected',
+              description: 'Status updated (no leader email found to notify).',
+            });
+          }
+        } catch (rejectError: any) {
+          console.error('Rejection email error:', rejectError);
+          toast({
+            title: 'Rejection Notification Failed',
+            description: `Status updated, but email failed: ${rejectError.message}`,
+            variant: 'destructive',
+          });
+        }
+        return; // skip further steps
+      }
+
+      // ── Step 4: waitlist → existing edge-function notification ─────────────
+      if (status === 'waitlisted' && hackathon) {
         try {
           const { data: sessionData } = await supabase.auth.getSession();
           await supabase.functions.invoke('send-application-notification', {
@@ -315,9 +396,13 @@ export default function OrganizerDashboard() {
       }
     },
     onSuccess: (_, vars) => {
+      console.log(`[Mutation Success] Status: ${vars.status}`);
       queryClient.invalidateQueries({ queryKey: ['hackathon-applications'] });
-      if (vars.status !== 'accepted') {
-        toast({ title: 'Application updated', description: 'The application status has been changed.' });
+      if (vars.status !== 'accepted' && vars.status !== 'rejected') {
+        toast({
+          title: `Status: ${vars.status}`,
+          description: `The application status has been changed to ${vars.status}.`
+        });
       }
     },
     onError: (error: any) => {
