@@ -1,6 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Menu, X, User, LogOut, Plus, LayoutDashboard } from 'lucide-react';
+import { Menu, X, User, LogOut, Plus, LayoutDashboard, Shield } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
@@ -17,7 +17,7 @@ import { NotificationBell } from '@/components/NotificationBell';
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
-  const { user, profile, signOut } = useAuth();
+  const { user, profile, isAdmin, signOut } = useAuth();
   const navigate = useNavigate();
 
   const handleSignOut = async () => {
@@ -95,6 +95,12 @@ export function Navbar() {
                       <User className="mr-2 h-4 w-4" />
                       Profile
                     </DropdownMenuItem>
+                    {isAdmin && (
+                      <DropdownMenuItem onClick={() => navigate('/admin')} className="font-bold uppercase bg-yellow-400/20 focus:bg-yellow-400 focus:text-black">
+                        <Shield className="mr-2 h-4 w-4" />
+                        Command Center
+                      </DropdownMenuItem>
+                    )}
                     <DropdownMenuSeparator className="bg-black dark:bg-white h-0.5" />
                     <DropdownMenuItem onClick={handleSignOut} className="text-destructive font-bold uppercase focus:bg-destructive focus:text-white">
                       <LogOut className="mr-2 h-4 w-4" />
@@ -171,6 +177,15 @@ export function Navbar() {
                   >
                     Profile
                   </Link>
+                  {isAdmin && (
+                    <Link
+                      to="/admin"
+                      className="font-bold uppercase tracking-tight px-4 py-3 bg-yellow-400/20 hover:bg-yellow-400 hover:text-black transition-colors border-b border-black/10 dark:border-white/10"
+                      onClick={() => setIsOpen(false)}
+                    >
+                      Command Center
+                    </Link>
+                  )}
                   <button
                     onClick={() => { handleSignOut(); setIsOpen(false); }}
                     className="text-left text-destructive font-bold uppercase tracking-tight px-4 py-3 hover:bg-destructive/10 transition-colors"

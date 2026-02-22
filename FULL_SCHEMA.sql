@@ -350,7 +350,7 @@ AS $$
   ) OR EXISTS (
     SELECT 1 FROM public.organizer_team
     WHERE hackathon_id = _hackathon_id AND user_id = _user_id AND accepted = true
-  )
+  ) OR public.has_role(_user_id, 'admin')
 $$;
 
 -- Check if user is an accepted team member
@@ -517,6 +517,11 @@ DROP POLICY IF EXISTS "Organizers can delete own hackathons" ON public.hackathon
 CREATE POLICY "Organizers can delete own hackathons"
   ON public.hackathons FOR DELETE USING (auth.uid() = created_by);
 
+-- ── Admin Overrides ──
+DROP POLICY IF EXISTS "Admins can manage all hackathons" ON public.hackathons;
+CREATE POLICY "Admins can manage all hackathons"
+  ON public.hackathons FOR ALL USING (public.has_role(auth.uid(), 'admin'));
+
 -- ── prizes ──
 DROP POLICY IF EXISTS "Anyone can view prizes" ON public.prizes;
 CREATE POLICY "Anyone can view prizes"
@@ -610,6 +615,10 @@ DROP POLICY IF EXISTS "Organizers can update applications" ON public.application
 CREATE POLICY "Organizers can update applications"
   ON public.applications FOR UPDATE TO authenticated
   USING (public.is_hackathon_organizer(auth.uid(), hackathon_id));
+
+DROP POLICY IF EXISTS "Admins can manage all applications" ON public.applications;
+CREATE POLICY "Admins can manage all applications"
+  ON public.applications FOR ALL USING (public.has_role(auth.uid(), 'admin'));
 
 -- ── projects ──
 DROP POLICY IF EXISTS "Anyone can view submitted projects" ON public.projects;

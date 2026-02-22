@@ -18,6 +18,8 @@ import OrganizerDashboard from "./pages/OrganizerDashboard";
 import OrganizerScanner from "./pages/OrganizerScanner";
 import ProjectGallery from "./pages/ProjectGallery";
 import Leaderboard from "./pages/Leaderboard";
+import AdminDashboard from "./pages/AdminDashboard";
+import { AdminRoute } from "@/components/AdminRoute";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -90,6 +92,14 @@ const App = () => (
                   <ProtectedRoute>
                     <OrganizerScanner />
                   </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin"
+                element={
+                  <AdminRoute>
+                    <AdminDashboard />
+                  </AdminRoute>
                 }
               />
               <Route path="/hackathon/:id/leaderboard" element={<Leaderboard />} />
